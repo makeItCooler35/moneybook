@@ -2,3 +2,4 @@ backend/venv
 __pycache__
 migrations
 *.code-workspace
+node_modules
