@@ -1,15 +1,20 @@
 <template>
   <b-container fluid>
     <b-row>
-      <b-col cols="4">
+      <b-col cols="3">
         <b-list-group>
           <b-list-group-item 
-            v-for="(item, key) of routes"
+            v-for="(item, key) of items"
             :key="key"
+            :to="{name: item.name}"
+            variant="primary"
           >
-            {{item.title}}
+          {{ item.title }}
           </b-list-group-item>
         </b-list-group>
+      </b-col>
+      <b-col>
+        <router-view />
       </b-col>
     </b-row>
   </b-container>
@@ -20,10 +25,8 @@
 export default({
   data(){
     return{
-      routes:[
-        {title: 'Загрузить расходы их Excel (Тинькофф)', name: 'pets'},
-        {title: 'Типы животных', name: 'petTypes'},
-        {title: 'О приложении', name: 'about'},
+      items:[
+        {title: 'Загрузить расходы их Excel (Тинькофф)', name: 'uploadtinkoff'},
       ],
     };
   },

@@ -2,7 +2,7 @@
   <b-container fluid class="mx-auto">
     <b-row>
       <b-col v-for="(item,  key) of items" :key="key" class="text-center">
-        <b-button :to="item.name">
+        <b-button :to="{name: item.name}" variant="primary">
         <b-card
           :img-src="require('../assets/icons/books.png')"
           tag="article"
@@ -25,7 +25,7 @@ export default({
   data(){
     return{
       items:[
-        {title: 'Типы операций', name: 'typeoperations'},
+        {title: 'Категории', name: 'categories'},
         {title: 'Счета', name: 'accounts'},
       ],
     };
