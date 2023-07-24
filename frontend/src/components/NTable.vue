@@ -25,26 +25,36 @@
       :total-rows="totalRows"
       :per-page="perPage"
       aria-controls="my-table"
-    ></b-pagination>
+    />
     <delete-dialog
-      v-model="showDeleteDialog"
+      :value="showDeleteDialog"
       :http-model="httpModel"
       :id="currentId"
       @close="OnDeleteClose"
+    />
+    <upd-ins-dialog
+      :value="showUpdInsDialog"
+      :http-model="httpModel"
+      :id="currentId"
+      :fields="fields"
+      :current-row="currentRow"
+      @close="OnUpdInsClose"
     />
   </div>
 </template>
 
 <script>
 import DeleteDialog from './ntable/DeleteDialog.vue';
+import UpdInsDialog from './ntable/UpdInsDialog.vue';
   export default {
-  components: { DeleteDialog },
+  components: { DeleteDialog, UpdInsDialog },
     props: {
       httpModel: {type: String, required: true},
     },
     data() {
       return {
         showDeleteDialog: false,
+        showUpdInsDialog: false,
         currentRow: {},
         currentId: null,
         title: '',
@@ -73,7 +83,7 @@ import DeleteDialog from './ntable/DeleteDialog.vue';
         this.prepareData(res);
         const selection = (await import(`../selections/${this.httpModel}`)).default;
         this.title = selection.title;
-        this.fields = selection.fields;
+        this.fields = selection.fields.slice(0);
         this.fields.push({
           key: 'actions',
           label: ''
@@ -93,20 +103,29 @@ import DeleteDialog from './ntable/DeleteDialog.vue';
         }
         this.totalRows = data.pagination.count_rows;
       },
-      OnClickUpdate(row) {
-        console.log(row);
-      },
-      OnClickDelete(row) {
-        this.showDeleteDialog = true;
-        this.currentRow = row;
+      _initModal(modalVar, row) {
+        this[modalVar] = true;
+        this.currentRow = row.item;
         this.currentId = row.item.id;
       },
-      OnDeleteClose() {
+      OnClickUpdate(row) {
+        this._initModal('showUpdInsDialog', row);
+      },
+      OnClickDelete(row) {
+        this._initModal('showDeleteDialog', row);
+      },
+      _destroyModal(modalVar) {
+        this[modalVar] = false;
         this.currentRow = {};
-        this.showDeleteDialog = false;
         this.currentId = null;
         this.fetchData();
-      } 
+      },
+      OnUpdInsClose() {
+        this._destroyModal('showUpdInsDialog');
+      },
+      OnDeleteClose() {
+        this._destroyModal('showDeleteDialog');
+      }
     },
   }
 </script>

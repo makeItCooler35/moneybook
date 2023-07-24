@@ -4,7 +4,7 @@
     button-size="sm"
     hide-header
     @ok="doDelete"
-    @cancel="doClose"
+    @hidden="doHide"
     ok-title="Удалить"
     ok-variant="danger"
     cancel-title="Отменить"
@@ -42,7 +42,7 @@ export default {
       }
       this.$emit('close', res);
     },
-    doClose() {
+    doHide() {
       this.show = false;
       this.$emit('close');
     }

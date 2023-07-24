@@ -4,15 +4,18 @@ export default
   fields: [
     {
       key: 'sum',
-      label: "Сумма"
+      label: "Сумма",
+      type: 'number'
     },
     {
       key: 'bonus',
-      label: "Бонус"
+      label: "Бонус",
+      type: 'number'
     },
     {
       key: 'description',
-      label: 'Описание'
+      label: 'Описание',
+      type: 'text'
     },
     {
       key: 'category_name',
@@ -23,6 +26,7 @@ export default
     {
       key: 'time_at',
       label: 'Дата и время',
+      type: 'datetime'
     }
   ]
 }
