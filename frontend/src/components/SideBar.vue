@@ -23,6 +23,7 @@ export default({
   data(){
     return{
       items:[
+        {title: 'Книга', name: 'book'},
         {title: 'Операции', name: 'operations'},
         {title: 'Справочники', name: 'handbooks'},
         {title: 'О приложении', name: 'about'},

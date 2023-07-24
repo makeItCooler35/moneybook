@@ -1,0 +1,56 @@
+<template>
+  <b-modal
+    v-model="show"
+    button-size="sm"
+    hide-header
+    @ok="doDelete"
+    @cancel="doClose"
+    ok-title="Удалить"
+    ok-variant="danger"
+    cancel-title="Отменить"
+  >
+    <b-container>
+      <b-row>
+        <b-col>
+          Вы уверены?
+        </b-col>
+      </b-row>
+    </b-container>
+  </b-modal>
+</template>
+
+<script>
+export default {
+  props: {
+    value: {type: Boolean, default: false},
+    id: {required: true},
+    httpModel: {type: String, required: true}
+  },
+  data() {
+    return {
+      show: false,
+    };
+  },
+  methods: {
+    async doDelete() {
+      let res = null;
+      try {
+        res = await this.$http.delete(this.httpModel + `/${this['id']}`);
+      }
+      catch(err) {
+        res = err.response.statusText;
+      }
+      this.$emit('close', res);
+    },
+    doClose() {
+      this.show = false;
+      this.$emit('close');
+    }
+  },
+  watch: {
+    value(newVal) {
+      this.show = newVal;
+    }
+  }
+}
+</script>
