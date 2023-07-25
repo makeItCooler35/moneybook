@@ -7,6 +7,7 @@
       @hidden="doHide"
       ok-title="Сохранить"
       cancel-title="Отменить"
+      :ok-disabled="!isChanged"
     >
       <b-container>
         <b-row v-for="(header, key) of headers" :key="key">
@@ -50,10 +51,24 @@ export default {
     headers() {
       return this.fields.filter(field => field.key != 'actions');
     },
+    isChanged() {
+      const exch = Object.values(this.newRow).filter(x => !Object.values(this.currentRow).includes(x));
+      return exch.length;
+    },
   },
   methods: {
-    doUpdIns() {
-      console.log(1);
+    async doUpdIns() {
+      let res = "";
+      try {
+        if(this.id) {
+          res = await this.$http.patch(this.httpModel + `/${this.id}`, this.newRow);
+        }
+      }
+      catch(err) {
+        res = err;
+      }
+      this.show = false;
+      this.$emit('close', res);
     },
     doHide() {
       this.show = false;

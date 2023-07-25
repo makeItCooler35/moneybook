@@ -12,10 +12,10 @@
       small
     >
       <template #cell(actions)="row">
-        <b-button class="mx-2" size="sm" variant="warning" @click="OnClickUpdate(row)">
+        <b-button class="mx-2" size="sm" variant="warning" @click="InitModal('showUpdInsDialog', row)">
           <b-img :src="require('@/assets/icons/pencil-square.svg')"/>
         </b-button>
-        <b-button size="sm" variant="danger" @click="OnClickDelete(row)">
+        <b-button size="sm" variant="danger" @click="InitModal('showDeleteDialog', row)">
           <b-img :src="require('@/assets/icons/trash.svg')"/>
         </b-button>
       </template>
@@ -30,7 +30,7 @@
       :value="showDeleteDialog"
       :http-model="httpModel"
       :id="currentId"
-      @close="OnDeleteClose"
+      @close="DestroyModal('showDeleteDialog')"
     />
     <upd-ins-dialog
       :value="showUpdInsDialog"
@@ -38,7 +38,7 @@
       :id="currentId"
       :fields="fields"
       :current-row="currentRow"
-      @close="OnUpdInsClose"
+      @close="DestroyModal('showUpdInsDialog')"
     />
   </div>
 </template>
@@ -103,29 +103,17 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         }
         this.totalRows = data.pagination.count_rows;
       },
-      _initModal(modalVar, row) {
+      InitModal(modalVar, row) {
         this[modalVar] = true;
         this.currentRow = row.item;
         this.currentId = row.item.id;
       },
-      OnClickUpdate(row) {
-        this._initModal('showUpdInsDialog', row);
-      },
-      OnClickDelete(row) {
-        this._initModal('showDeleteDialog', row);
-      },
-      _destroyModal(modalVar) {
+      DestroyModal(modalVar) {
         this[modalVar] = false;
         this.currentRow = {};
         this.currentId = null;
         this.fetchData();
       },
-      OnUpdInsClose() {
-        this._destroyModal('showUpdInsDialog');
-      },
-      OnDeleteClose() {
-        this._destroyModal('showDeleteDialog');
-      }
     },
   }
 </script>
