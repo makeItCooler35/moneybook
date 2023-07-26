@@ -44,7 +44,7 @@ export default {
   },
   computed: {
     retVal() {
-      return (this.value ?? this.currentValue) || "Установите связь";
+      return this.currentValue || "Установите связь";
     },
     isChanged() {
       return this.startId != this.currentId;

@@ -28,7 +28,16 @@ export default
     {
       key: 'time_at',
       label: 'Дата и время',
-      type: 'datetime'
+      type: 'datetime',
+      formatter: value => {
+        return new Date(value).toLocaleString('ru', {
+          year: 'numeric',
+          month: "numeric",
+          day: "numeric",
+          hour: 'numeric',
+          minute: 'numeric'
+        });
+      }
     }
   ]
 }
