@@ -21,7 +21,9 @@ export default
       key: 'category_name',
       label: 'Категория',
       type: 'link',
-      bindField: 'category'
+      bindField: 'category',
+      bindKey: 'name',
+      model: 'categories',
     },
     {
       key: 'time_at',

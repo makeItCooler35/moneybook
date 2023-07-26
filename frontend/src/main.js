@@ -17,6 +17,7 @@ Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
 
 Vue.component('n-table', NTable)
+Vue.component('n-table2', NTable)
 
 Vue.config.productionTip = false
 Vue.prototype.$http = axios

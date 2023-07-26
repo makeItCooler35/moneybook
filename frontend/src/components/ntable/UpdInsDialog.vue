@@ -10,13 +10,20 @@
       :ok-disabled="!isChanged"
     >
       <b-container>
-        <b-row v-for="(header, key) of headers" :key="key">
+        <b-row v-for="(header, key) of headers" :key="key" class="mb-1">
           <b-col>
             {{ header.label }}
           </b-col>
           <b-col>
-            <span v-if="header.type==='link'">
-            </span>
+            <n-link-field
+              v-if="header.type==='link'"
+              :http-model="header.model"
+              :start-value="newRow[header.key]"
+              :start-id="newRow[header.bindField]"
+              :bind-field="header.bindField"
+              :bind-key="header.bindKey"
+              @update:fk="OnUpdateFK"
+            />
             <input
               v-else-if="header.type=='datetime'"
               v-model="newRow[header.key]"
@@ -33,7 +40,11 @@
 </template>
 
 <script>
+import NLinkField from '../NLinkField.vue';
 export default {
+  components: {
+    NLinkField
+  },
   props: {
     value: {type: Boolean, default: false},
     id: {required: true},
@@ -49,7 +60,7 @@ export default {
   },
   computed: {
     headers() {
-      return this.fields.filter(field => field.key != 'actions');
+      return this.fields.filter(field => field.label || '' != '');
     },
     isChanged() {
       const exch = Object.values(this.newRow).filter(x => !Object.values(this.currentRow).includes(x));
@@ -73,6 +84,9 @@ export default {
     doHide() {
       this.show = false;
       this.$emit('close');
+    },
+    OnUpdateFK(item) {
+      this.newRow[item.bindField] = item.currentId;
     }
   },
   watch: {

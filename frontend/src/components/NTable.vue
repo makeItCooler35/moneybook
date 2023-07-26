@@ -10,7 +10,15 @@
       :per-page="perPage"
       :current-page="currentPage"
       small
+      selectable
+      :select-mode="selectMode"
+      @row-selected="onRowSelected"
+      ref="mainTable"
     >
+      <template #cell(selected)="{ rowSelected }">
+          <span v-if="rowSelected" aria-hidden="true">&check;</span>
+          <span v-else aria-hidden="true">&nbsp;</span>
+      </template>
       <template #cell(actions)="row">
         <b-button class="mx-2" size="sm" variant="warning" @click="InitModal('showUpdInsDialog', row)">
           <b-img :src="require('@/assets/icons/pencil-square.svg')"/>
@@ -27,13 +35,13 @@
       aria-controls="my-table"
     />
     <delete-dialog
-      :value="showDeleteDialog"
+      v-model="showDeleteDialog"
       :http-model="httpModel"
       :id="currentId"
       @close="DestroyModal('showDeleteDialog')"
     />
     <upd-ins-dialog
-      :value="showUpdInsDialog"
+      v-model="showUpdInsDialog"
       :http-model="httpModel"
       :id="currentId"
       :fields="fields"
@@ -50,6 +58,10 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
   components: { DeleteDialog, UpdInsDialog },
     props: {
       httpModel: {type: String, required: true},
+      noActions: {type: Boolean, default: false},
+      selectable: {type: Boolean, default: false},
+      selectMode: {type:  String, default: 'multi'},
+      defaultRowSelected: {type: [Number, null], default: undefined},
     },
     data() {
       return {
@@ -63,31 +75,54 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         totalRows: 0,
         items: [],
         fields: [],
+        selected: [],
       }
     },
-    created() {
-      this.fetchData();
+    async created() {
+      await this.fetchData();
+      this.autoSelectRow();
     },
     methods: {
       async fetchData() {
         const res = (await this.$http.get(
-        this.httpModel, {
-          params: {
-            pagination: {
-              perPage: this.perPage,
-              page: this.currentPage
+          this.httpModel, {
+            params: {
+              pagination: {
+                perPage: this.perPage,
+                page: this.currentPage
+              }
             }
-          }
-        })
+          })
         ).data;
         this.prepareData(res);
-        const selection = (await import(`../selections/${this.httpModel}`)).default;
+
+        let selection = {};
+        try {
+          selection = (await import(`../selections/${this.httpModel}`)).default;
+        }
+        catch(err) {
+          selection.title = "";
+          selection.fields = res.fields.slice(0);
+        }
+
         this.title = selection.title;
         this.fields = selection.fields.slice(0);
-        this.fields.push({
-          key: 'actions',
-          label: ''
-        });
+        
+        if(this.selectable)
+        {
+          this.fields.unshift({
+            key: 'selected',
+            label: ''
+          });
+        }
+
+        if(!this.noActions)
+        {
+          this.fields.push({
+            key: 'actions',
+            label: ''
+          });
+        }
       },
       prepareData(data) {
         this.items = [];
@@ -114,6 +149,23 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         this.currentId = null;
         this.fetchData();
       },
+      onRowSelected(items) {
+        this.selected = items;
+        if(this.defaultRowSelected !== undefined) {
+          this.$emit('update:fk', this.selected);
+        }
+      },
+      autoSelectRow() {
+        if(this.defaultRowSelected)
+        {
+          for(let index in this.items) {
+            if(this.items[index].id == this.defaultRowSelected) {
+              this.$refs.mainTable.selectRow(+index);
+              break;
+            }
+          }
+        }
+      }
     },
   }
 </script>
