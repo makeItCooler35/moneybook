@@ -18,19 +18,19 @@
             <n-link-field
               v-if="header.type==='link'"
               :http-model="header.model"
-              :start-value="newRow[header.key]"
-              :start-id="newRow[header.bindField]"
+              :start-value="currentRow[header.key]"
+              :start-id="currentRow[header.bindField]"
               :bind-field="header.bindField"
               :bind-key="header.bindKey"
               @update:fk="OnUpdateFK"
             />
             <input
               v-else-if="header.type=='datetime'"
-              v-model="newRow[header.key]"
+              v-model="currentRow[header.key]"
               type="datetime-local"  
             >
             <b-input v-else
-              v-model="newRow[header.key]"
+              v-model="currentRow[header.key]"
               :type="header.type || 'text'"
             />
           </b-col>
@@ -50,12 +50,12 @@ export default {
     id: {required: true},
     httpModel: {type: String, required: true},
     fields: {type: Array, required: true},
-    currentRow: {type: Object, require: true}
+    startRow: {type: Object, require: true}
   },
   data() {
     return {
       show: false,
-      newRow: {},
+      currentRow: {},
     };
   },
   computed: {
@@ -63,8 +63,8 @@ export default {
       return this.fields.filter(field => field.label || '' != '');
     },
     isChanged() {
-      const exch = Object.values(this.newRow).filter(x => !Object.values(this.currentRow).includes(x));
-      return exch.length;
+      const exch = Object.values(this.currentRow).filter(x => !Object.values(this.startRow).includes(x));
+      return Boolean(exch.length);
     },
   },
   methods: {
@@ -72,7 +72,10 @@ export default {
       let res = "";
       try {
         if(this.id) {
-          res = await this.$http.patch(this.httpModel + `/${this.id}`, this.newRow);
+          res = await this.$http.patch(this.httpModel + `/${this.id}`, this.currentRow);
+        }
+        else {
+          res = await this.$http.post(this.httpModel, this.currentRow);
         }
       }
       catch(err) {
@@ -86,19 +89,19 @@ export default {
       this.$emit('close');
     },
     OnUpdateFK(item) {
-      this.newRow[item.bindField] = item.currentId;
+      this.$set(this.currentRow, `${item.bindField}`, item.currentId);
     }
   },
   watch: {
     value(newVal) {
       this.show = newVal;
     },
-    currentRow: {
+    startRow: {
       deep: true,
       handler(newVal) {
-        this.newRow = Object.assign({}, newVal);
+        this.currentRow = Object.assign({}, newVal);
       }
     }
-  }
+  },
 }
 </script>

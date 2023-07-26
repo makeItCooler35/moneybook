@@ -15,6 +15,21 @@
       @row-selected="onRowSelected"
       ref="mainTable"
     >
+      <template #head(selected)>
+        <b-button variant="outline-primary" @click="onClickToAllSelect">
+          <span
+            aria-hidden="true"
+            :class="isAllSelected ? `text-primary` : `text-white`"
+          >
+            &check;
+          </span>
+        </b-button>
+      </template>
+      <template #head(actions)>
+        <b-button variant="primary" @click="InitModal('showUpdInsDialog')">
+          +
+        </b-button>
+      </template>
       <template #cell(selected)="{ rowSelected }">
           <span v-if="rowSelected" aria-hidden="true">&check;</span>
           <span v-else aria-hidden="true">&nbsp;</span>
@@ -45,7 +60,7 @@
       :http-model="httpModel"
       :id="currentId"
       :fields="fields"
-      :current-row="currentRow"
+      :start-row="currentRow"
       @close="DestroyModal('showUpdInsDialog')"
     />
   </div>
@@ -76,6 +91,11 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         items: [],
         fields: [],
         selected: [],
+      }
+    },
+    computed: {
+      isAllSelected() {
+        return [this.perPage, this.totalRows].indexOf(this.selected.length) > -1;
       }
     },
     async created() {
@@ -138,10 +158,10 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         }
         this.totalRows = data.pagination.count_rows;
       },
-      InitModal(modalVar, row) {
+      InitModal(modalVar, row = {}) {
         this[modalVar] = true;
-        this.currentRow = row.item;
-        this.currentId = row.item.id;
+        this.currentRow = row.item ?? {};
+        this.currentId = this.currentRow.id;
       },
       DestroyModal(modalVar) {
         this[modalVar] = false;
@@ -163,6 +183,16 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
               this.$refs.mainTable.selectRow(+index);
               break;
             }
+          }
+        }
+      },
+      onClickToAllSelect() {
+        if(this.selectMode == 'multi') {
+          if(this.isAllSelected) {
+            this.$refs.mainTable.clearSelected();
+          }
+          else {
+            this.$refs.mainTable.selectAllRows();
           }
         }
       }
