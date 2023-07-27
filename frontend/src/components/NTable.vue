@@ -69,7 +69,7 @@
       </b-col>
       <b-col class="text-end">
         <span>
-          Показано {{ items.length }} записей из {{ totalRows }}.
+          {{ items.length }} записей из {{ totalRows }}
         </span>
       </b-col>
     </b-row>
@@ -77,7 +77,7 @@
       v-model="showDeleteDialog"
       :http-model="httpModel"
       :id="currentId"
-      @close="DestroyModal('showDeleteDialog')"
+      @close="DestroyModal()"
     />
     <upd-ins-dialog
       v-model="showUpdInsDialog"
@@ -85,7 +85,7 @@
       :id="currentId"
       :fields="fields"
       :start-row="currentRow"
-      @close="DestroyModal('showUpdInsDialog')"
+      @close="DestroyModal()"
     />
   </b-container>
 </template>
@@ -197,8 +197,7 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         this.currentRow = row.item ?? {};
         this.currentId = this.currentRow.id;
       },
-      DestroyModal(modalVar) {
-        this[modalVar] = false;
+      DestroyModal() {
         this.currentRow = {};
         this.currentId = null;
         this.fetchData();

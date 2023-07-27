@@ -18,10 +18,10 @@
           <b-col>
             <n-table2
               :http-model="httpModel"
+              :default-row-selected="currentId"
               no-actions
               selectable
               select-mode="single"
-              :default-row-selected="currentId"
               @update:fk="OnUpdateFK"
             />
           </b-col>

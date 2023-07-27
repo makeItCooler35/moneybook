@@ -54,8 +54,7 @@ export default {
   },
   data() {
     return {
-      show: false,
-      currentRow: {},
+      currentRow: {}
     };
   },
   computed: {
@@ -65,6 +64,14 @@ export default {
     isChanged() {
       const exch = Object.values(this.currentRow).filter(x => !Object.values(this.startRow).includes(x));
       return Boolean(exch.length);
+    },
+    show: {
+      get() {
+        return this.value;
+      },
+      set(val) {
+        this.$emit('input', val);
+      }
     },
   },
   methods: {
@@ -93,9 +100,6 @@ export default {
     }
   },
   watch: {
-    value(newVal) {
-      this.show = newVal;
-    },
     startRow: {
       deep: true,
       handler(newVal) {

@@ -28,8 +28,17 @@ export default {
   },
   data() {
     return {
-      show: false,
     };
+  },
+  computed: {
+    show: {
+      get() {
+        return this.value;
+      },
+      set(val) {
+        this.$emit('input', val);
+      }
+    }
   },
   methods: {
     async doDelete() {
@@ -47,10 +56,5 @@ export default {
       this.$emit('close');
     }
   },
-  watch: {
-    value(newVal) {
-      this.show = newVal;
-    }
-  }
 }
 </script>
