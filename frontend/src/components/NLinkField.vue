@@ -1,19 +1,20 @@
 <template>
   <b-container class="m-0 p-0">
-    <b-button @click="toShow = true" variant="success">
-      {{ retVal }}
+    <b-button @click="toShow = true" variant="success" style="width: 100%;">
+      {{ title }}
     </b-button>
     <b-modal
       v-model="toShow"
       button-size="sm"
       hide-header
+      size="xl"
       @ok="makeEmit"
       ok-title="Выбрать"
       ok-variant="danger"
       cancel-title="Выйти"
       :ok-disabled="!isChanged"
     >
-      <b-container class="mw-100 m-0">
+      <b-container class="w-100 h-100 m-0">
         <b-row>
           <b-col>
             <n-table2
@@ -43,7 +44,7 @@ export default {
     bindField: {type: String, required: true}
   },
   computed: {
-    retVal() {
+    title() {
       return this.currentValue || "Установите связь";
     },
     isChanged() {

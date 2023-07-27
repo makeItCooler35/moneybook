@@ -3,6 +3,7 @@
     v-model="show"
     button-size="sm"
     hide-header
+    centered
     @ok="doDelete"
     @hidden="doHide"
     ok-title="Удалить"

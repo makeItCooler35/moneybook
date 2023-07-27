@@ -47,7 +47,7 @@
       </b-table>
     </b-row>
     <b-row class="mt-auto text-center border-bottom justify-content-end p-1">
-      <b-col lg="3" sm="6" class="d-flex flex-row">
+      <b-col xl="4" sm="6" class="d-flex flex-row">
         <b-col cols="4">
           <b-form-input
             v-model="currentPage"
@@ -65,7 +65,7 @@
           </label>
         </b-col>
       </b-col>
-      <b-col lg="3" sm="6">
+      <b-col xl="4" sm="6">
         <b-form-select
           v-model="perPage"
           :options="perPageOptions"
@@ -73,7 +73,8 @@
           @change="OnChangePerPage"
         />
         <label class="text-start mx-2 my-auto">
-          записей из {{ totalRows }}
+          записей
+          ({{ totalRows > perPage ? perPage : totalRows}} из {{ totalRows }})
         </label>
       </b-col>
     </b-row>

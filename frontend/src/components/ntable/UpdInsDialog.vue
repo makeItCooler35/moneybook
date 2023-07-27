@@ -3,6 +3,7 @@
       v-model="show"
       button-size="sm"
       hide-header
+      centered
       @ok="doUpdIns"
       @hidden="doHide"
       ok-title="Сохранить"
@@ -10,7 +11,7 @@
       :ok-disabled="!isChanged"
     >
       <b-container>
-        <b-row v-for="(header, key) of headers" :key="key" class="mb-1">
+        <b-row v-for="(header, key) of headers" :key="key" class="mb-2">
           <b-col>
             {{ header.label }}
           </b-col>
@@ -29,7 +30,8 @@
               v-model="currentRow[header.key]"
               type="datetime-local"  
             >
-            <b-input v-else
+            <b-input
+              v-else
               v-model="currentRow[header.key]"
               :type="header.type || 'text'"
             />
