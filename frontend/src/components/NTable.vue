@@ -85,7 +85,7 @@
         />
         <label class="text-start mx-2 my-auto">
           записей
-          ({{ totalRows > perPage ? perPage : totalRows}} из {{ totalRows }})
+          ({{ totalRows > this.items.length ? this.items.length : totalRows}} из {{ totalRows }})
         </label>
       </b-col>
     </b-row>
@@ -193,7 +193,7 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
           this.fields.unshift({
             key: 'selected',
             label: '',
-            class: 'text-center'
+            sortable: false
           });
         }
 
@@ -202,8 +202,15 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
           this.fields.push({
             key: 'actions',
             label: '',
-            class: 'text-center'
+            sortable: false
           });
+        }
+
+        /* делаем по умолчанию все поля сортируемыми, и выравниваем по центру,
+          если не указано иное */
+        for(const item of this.fields) {
+          item.class = item.class ?? 'text-center';
+          item.sortable = item.sortable ?? true;
         }
 
         this.isBusy = false;

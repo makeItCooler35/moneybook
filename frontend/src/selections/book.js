@@ -38,11 +38,6 @@ const fields = [
   }
 ];
 
-for(const item of fields) {
-  item.sortable = true;
-  item.class = 'text-center';
-}
-
 export default
 {
   title: "Книга операций",
