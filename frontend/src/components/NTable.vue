@@ -46,38 +46,42 @@
         </template>
       </b-table>
     </b-row>
-    <b-row class="mt-auto">
-      <b-col cols="6">
-        <b-pagination
-          v-model="currentPage"
-          :total-rows="totalRows"
-          :per-page="perPage"
-          aria-controls="my-table"
-          align="fill"
-          size="sm"
-          class="mb-0"
-        />
+    <b-row class="mt-auto text-center border-bottom justify-content-end p-1">
+      <b-col lg="3" sm="6" class="d-flex flex-row">
+        <b-col cols="4">
+          <b-form-input
+            v-model="currentPage"
+            type="number"
+            min="1"
+            :max="totalPages"
+            class="text-center"
+            :state="stateCurrentPage"
+            @change="OnChangeCurrentPage"
+          />
+        </b-col>
+        <b-col class="text-start mx-2 my-auto">
+          <label>
+            страница из {{ totalPages }}
+          </label>
+        </b-col>
       </b-col>
-      <b-col cols="3" class="text-center">
+      <b-col lg="3" sm="6">
         <b-form-select
           v-model="perPage"
-          :options="pageOptions"
+          :options="perPageOptions"
+          class="h-100 text-center"
+          @change="OnChangePerPage"
         />
-        <span>
-          записей
-        </span>
-      </b-col>
-      <b-col class="text-end">
-        <span>
-          {{ items.length }} записей из {{ totalRows }}
-        </span>
+        <label class="text-start mx-2 my-auto">
+          записей из {{ totalRows }}
+        </label>
       </b-col>
     </b-row>
     <delete-dialog
       v-model="showDeleteDialog"
       :http-model="httpModel"
       :id="currentId"
-      @close="DestroyModal()"
+      @close="DestroyModal"
     />
     <upd-ins-dialog
       v-model="showUpdInsDialog"
@@ -85,7 +89,7 @@
       :id="currentId"
       :fields="fields"
       :start-row="currentRow"
-      @close="DestroyModal()"
+      @close="DestroyModal"
     />
   </b-container>
 </template>
@@ -110,9 +114,10 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         currentId: null,
         title: '',
         perPage: 5,
-        pageOptions: [5, 10, 25, 50, 100, 500, 1500],
+        perPageOptions: [5, 10, 25, 50, 100, 500, 1500],
         currentPage: 1,
         totalRows: 0,
+        totalPages: 1,
         items: [],
         fields: [],
         selected: [],
@@ -121,6 +126,12 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
     computed: {
       isAllSelected() {
         return [this.perPage, this.totalRows].indexOf(this.selected.length) > -1;
+      },
+      stateCurrentPage() {
+        if(1 <= this.currentPage && this.currentPage <= this.totalPages)
+          return null;
+        else 
+          return false;
       }
     },
     async created() {
@@ -191,6 +202,7 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
           this.$set(this.items, index, item);
         }
         this.totalRows = data.pagination.count_rows;
+        this.totalPages = data.pagination.count_pages;
       },
       InitModal(modalVar, row = {}) {
         this[modalVar] = true;
@@ -228,15 +240,17 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
             this.$refs.mainTable.selectAllRows();
           }
         }
+      },
+      async OnChangePerPage() {
+        await this.fetchData();
+        if(this.stateCurrentPage === false)
+          this.currentPage = 1;
+      },
+      OnChangeCurrentPage() {
+        if(this.stateCurrentPage == null) {
+          this.fetchData();
+        }
       }
     },
-    watch: {
-      perPage() {
-        this.fetchData();
-      },
-      currentPage() {
-        this.fetchData();
-      }
-    }
   }
 </script>
