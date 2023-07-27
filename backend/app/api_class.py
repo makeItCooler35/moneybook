@@ -2,6 +2,7 @@ from rest_framework.response import Response
 from rest_framework import generics
 from django.core.paginator import Paginator
 from django.http import HttpResponse
+import json
 
 class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
   def prepare_req_params(self, params):
@@ -15,7 +16,7 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
         dict[newKey][sub_key] = value
       else:
         newKey = key
-        dict[newKey] = value
+        dict[newKey] = json.loads(value)
     return dict
 
   def parse_get_data(self, data):
@@ -29,13 +30,20 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
     
     return res
   
+  def __create_sort_str(self, sort):
+    return ('-' if sort['sortDesc'] else '') + sort['sortBy']
+
+
   def get(self, request, *args, **kwargs):
     req_params = self.prepare_req_params(request.query_params)
     qs = None
     if 'pk' in kwargs:
       qs = [self.objects.get(pk=kwargs['pk'])]
     else:
-      qs = self.get_queryset().order_by('id')
+      sort = getattr(self, 'default_sorting', 'id')
+      if 'sorting' in req_params and len(req_params['sorting']):
+        sort = self.__create_sort_str(req_params['sorting'])
+      qs = self.get_queryset().order_by(sort)
 
     serializer = self.get_serializer_class()
 
@@ -43,7 +51,7 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
       per_page = int(req_params['pagination']['perPage'])
       page = int(req_params['pagination']['page'])
     except:
-      per_page = 25
+      per_page = 10
       page = 1
 
     paginator = Paginator(qs, per_page)

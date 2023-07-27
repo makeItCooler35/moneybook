@@ -7,21 +7,26 @@
     </b-row>
     <b-row>
       <b-table
-        id="my-table"
+        ref="mainTable"
         :fields="fields"
         :items="items"
         :per-page="perPage"
+        :busy="isBusy"
+        :select-mode="selectMode"
         small
         selectable
-        :select-mode="selectMode"
+        label-sort-desc=""
+        label-sort-asc=""
+        label-sort-clear=""
+        no-local-sorting
         @row-selected="onRowSelected"
-        ref="mainTable"
+        @sort-changed="onSortChanged"
       >
         <template #head(selected)>
-          <b-button variant="outline-primary" @click="onClickToAllSelect">
+          <b-button variant="outline-dark" @click="onClickToAllSelect">
             <span
               aria-hidden="true"
-              :class="isAllSelected ? `text-primary` : `text-white`"
+              :class="isAllSelected ? `text-dark` : `text-white`"
             >
               &check;
             </span>
@@ -43,6 +48,12 @@
           <b-button size="sm" variant="danger" @click="InitModal('showDeleteDialog', row)">
             <b-img :src="require('@/assets/icons/trash.svg')"/>
           </b-button>
+        </template>
+        <template #table-busy>
+          <div class="text-center text-dark my-2">
+            <b-spinner class="align-middle"></b-spinner>
+            <strong>Loading...</strong>
+          </div>
         </template>
       </b-table>
     </b-row>
@@ -114,14 +125,16 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         currentRow: {},
         currentId: null,
         title: '',
-        perPage: 5,
-        perPageOptions: [5, 10, 25, 50, 100, 500, 1500],
+        perPage: 10,
+        perPageOptions: [10, 25, 100, 500, 1500],
         currentPage: 1,
         totalRows: 0,
         totalPages: 1,
         items: [],
         fields: [],
         selected: [],
+        sorting: {},
+        isBusy: true,
       }
     },
     computed: {
@@ -142,6 +155,7 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
     methods: {
       async fetchData() {
         let res = null;
+        this.isBusy = true;
         try {
           res = (await this.$http.get(
             this.httpModel, {
@@ -149,7 +163,8 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
                 pagination: {
                   perPage: this.perPage,
                   page: this.currentPage
-                }
+                },
+                sorting: JSON.stringify(this.sorting)
               }
             })
           ).data;
@@ -177,7 +192,8 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         {
           this.fields.unshift({
             key: 'selected',
-            label: ''
+            label: '',
+            class: 'text-center'
           });
         }
 
@@ -185,9 +201,12 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         {
           this.fields.push({
             key: 'actions',
-            label: ''
+            label: '',
+            class: 'text-center'
           });
         }
+
+        this.isBusy = false;
       },
       prepareData(data) {
         this.items = [];
@@ -220,6 +239,13 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         if(this.defaultRowSelected !== undefined) {
           this.$emit('update:fk', this.selected);
         }
+      },
+      onSortChanged(event) {
+        this.sorting = {
+          sortBy: event.sortBy,
+          sortDesc: event.sortDesc
+        };
+        this.fetchData();
       },
       autoSelectRow() {
         if(this.defaultRowSelected)

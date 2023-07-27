@@ -28,7 +28,8 @@
             <input
               v-else-if="header.type=='datetime'"
               v-model="currentRow[header.key]"
-              type="datetime-local"  
+              type="datetime-local"
+              class="w-100"
             >
             <b-input
               v-else

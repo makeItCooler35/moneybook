@@ -14,3 +14,4 @@ class BookView(ApiView):
    queryset = model.objects.select_related("category").all()
    objects = model.objects
    serializer_class = BookSerializer
+   default_sorting = "time_at"
