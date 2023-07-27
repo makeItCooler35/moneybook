@@ -1,54 +1,78 @@
 <template>
-  <div class="overflow-auto">
-    <h1 class="mt-3 text-center">
-      {{ title }}
-    </h1>
-    <b-table
-      id="my-table"
-      :fields="fields"
-      :items="items"
-      :per-page="perPage"
-      :current-page="currentPage"
-      small
-      selectable
-      :select-mode="selectMode"
-      @row-selected="onRowSelected"
-      ref="mainTable"
-    >
-      <template #head(selected)>
-        <b-button variant="outline-primary" @click="onClickToAllSelect">
-          <span
-            aria-hidden="true"
-            :class="isAllSelected ? `text-primary` : `text-white`"
-          >
-            &check;
-          </span>
-        </b-button>
-      </template>
-      <template #head(actions)>
-        <b-button variant="primary" @click="InitModal('showUpdInsDialog')">
-          +
-        </b-button>
-      </template>
-      <template #cell(selected)="{ rowSelected }">
-          <span v-if="rowSelected" aria-hidden="true">&check;</span>
-          <span v-else aria-hidden="true">&nbsp;</span>
-      </template>
-      <template #cell(actions)="row">
-        <b-button class="mx-2" size="sm" variant="warning" @click="InitModal('showUpdInsDialog', row)">
-          <b-img :src="require('@/assets/icons/pencil-square.svg')"/>
-        </b-button>
-        <b-button size="sm" variant="danger" @click="InitModal('showDeleteDialog', row)">
-          <b-img :src="require('@/assets/icons/trash.svg')"/>
-        </b-button>
-      </template>
-    </b-table>
-    <b-pagination
-      v-model="currentPage"
-      :total-rows="totalRows"
-      :per-page="perPage"
-      aria-controls="my-table"
-    />
+  <b-container fluid class="d-flex flex-column">
+    <b-row>
+      <h1 class="text-center">
+        {{ title }}
+      </h1>
+    </b-row>
+    <b-row>
+      <b-table
+        id="my-table"
+        :fields="fields"
+        :items="items"
+        :per-page="perPage"
+        small
+        selectable
+        :select-mode="selectMode"
+        @row-selected="onRowSelected"
+        ref="mainTable"
+      >
+        <template #head(selected)>
+          <b-button variant="outline-primary" @click="onClickToAllSelect">
+            <span
+              aria-hidden="true"
+              :class="isAllSelected ? `text-primary` : `text-white`"
+            >
+              &check;
+            </span>
+          </b-button>
+        </template>
+        <template #head(actions)>
+          <b-button variant="primary" @click="InitModal('showUpdInsDialog')">
+            +
+          </b-button>
+        </template>
+        <template #cell(selected)="{ rowSelected }">
+            <span v-if="rowSelected" aria-hidden="true">&check;</span>
+            <span v-else aria-hidden="true">&nbsp;</span>
+        </template>
+        <template #cell(actions)="row">
+          <b-button class="mx-2" size="sm" variant="warning" @click="InitModal('showUpdInsDialog', row)">
+            <b-img :src="require('@/assets/icons/pencil-square.svg')"/>
+          </b-button>
+          <b-button size="sm" variant="danger" @click="InitModal('showDeleteDialog', row)">
+            <b-img :src="require('@/assets/icons/trash.svg')"/>
+          </b-button>
+        </template>
+      </b-table>
+    </b-row>
+    <b-row class="mt-auto">
+      <b-col cols="6">
+        <b-pagination
+          v-model="currentPage"
+          :total-rows="totalRows"
+          :per-page="perPage"
+          aria-controls="my-table"
+          align="fill"
+          size="sm"
+          class="mb-0"
+        />
+      </b-col>
+      <b-col cols="3" class="text-center">
+        <b-form-select
+          v-model="perPage"
+          :options="pageOptions"
+        />
+        <span>
+          записей
+        </span>
+      </b-col>
+      <b-col class="text-end">
+        <span>
+          Показано {{ items.length }} записей из {{ totalRows }}.
+        </span>
+      </b-col>
+    </b-row>
     <delete-dialog
       v-model="showDeleteDialog"
       :http-model="httpModel"
@@ -63,7 +87,7 @@
       :start-row="currentRow"
       @close="DestroyModal('showUpdInsDialog')"
     />
-  </div>
+  </b-container>
 </template>
 
 <script>
@@ -85,7 +109,8 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         currentRow: {},
         currentId: null,
         title: '',
-        perPage: 25,
+        perPage: 5,
+        pageOptions: [5, 10, 25, 50, 100, 500, 1500],
         currentPage: 1,
         totalRows: 0,
         items: [],
@@ -104,30 +129,38 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
     },
     methods: {
       async fetchData() {
-        const res = (await this.$http.get(
-          this.httpModel, {
-            params: {
-              pagination: {
-                perPage: this.perPage,
-                page: this.currentPage
-              }
-            }
-          })
-        ).data;
-        this.prepareData(res);
-
-        let selection = {};
+        let res = null;
         try {
-          selection = (await import(`../selections/${this.httpModel}`)).default;
+          res = (await this.$http.get(
+            this.httpModel, {
+              params: {
+                pagination: {
+                  perPage: this.perPage,
+                  page: this.currentPage
+                }
+              }
+            })
+          ).data;
+          this.prepareData(res);
         }
         catch(err) {
-          selection.title = "";
-          selection.fields = res.fields.slice(0);
+          console.log(err);
         }
 
-        this.title = selection.title;
-        this.fields = selection.fields.slice(0);
-        
+        if(!this.fields.length) {
+          let selection = null;
+          try {
+            selection = (await import(`../selections/${this.httpModel}`)).default;
+          }
+          catch(err) {
+            selection.title = "";
+            selection.fields = res && res.fields ? res.fields.slice(0) : {};
+          }
+
+          this.title = selection.title;
+          this.fields = selection.fields.slice(0);
+        }
+
         if(this.selectable)
         {
           this.fields.unshift({
@@ -148,13 +181,14 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         this.items = [];
         const rows = data.rows;
         const fields = data.fields;
-        for(const row of rows) {
+        for(const index in rows) {
+          const row = rows[index];
           let item = {};
           for(const num in fields) {
             const field = fields[num];
             item[field] = row[num];
           }
-          this.items.push(item);
+          this.$set(this.items, index, item);
         }
         this.totalRows = data.pagination.count_rows;
       },
@@ -197,5 +231,13 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         }
       }
     },
+    watch: {
+      perPage() {
+        this.fetchData();
+      },
+      currentPage() {
+        this.fetchData();
+      }
+    }
   }
 </script>

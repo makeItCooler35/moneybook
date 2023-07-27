@@ -1,14 +1,12 @@
 <template>
-  <div id="app">
-    <b-container fluid class="mb-2 mt-2">
-      <b-row>
-        <side-bar/>
-      </b-row>
-      <b-row>
-        <router-view/>
-      </b-row>
-    </b-container>
-  </div>
+  <b-container id="app" fluid style="height: 100vh;">
+    <b-row>
+      <side-bar/>
+    </b-row>
+    <b-row style="height: 90%;">
+      <router-view/>
+    </b-row>
+  </b-container>
 </template>
 
 <script>
