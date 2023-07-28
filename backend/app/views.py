@@ -11,6 +11,7 @@ class CategoriesView(ApiView):
    queryset = model.objects.all()
    objects = model.objects
    serializer_class = CategoriesSerializer
+   default_sorting = "mcc"
 
 class BookView(ApiView):
    model = Book

@@ -1,23 +1,34 @@
 <template>
-  <b-modal
-    v-model="show"
-    button-size="sm"
-    hide-header
-    centered
-    @ok="doDelete"
-    @hidden="doHide"
-    ok-title="Удалить"
-    ok-variant="danger"
-    cancel-title="Отменить"
-  >
-    <b-container>
-      <b-row>
-        <b-col>
-          Вы уверены?
-        </b-col>
-      </b-row>
-    </b-container>
-  </b-modal>
+  <b-container>
+    <b-modal
+      v-model="show"
+      button-size="sm"
+      hide-header
+      centered
+      @ok="doDelete"
+      @hidden="doHide"
+      ok-title="Удалить"
+      ok-variant="danger"
+      cancel-title="Отменить"
+    >
+      <b-container>
+        <b-row>
+          <b-col>
+            Вы уверены?
+          </b-col>
+        </b-row>
+      </b-container>
+    </b-modal>
+    <b-modal
+      v-model="showProgress"
+      centered
+      hide-header
+      hide-footer
+    >
+      <span>Идет удаление {{ maxProgress }} записей</span>
+      <b-progress :value="currentProgress" :max="maxProgress" show-progress animated/>
+    </b-modal>
+  </b-container>
 </template>
 
 <script>
@@ -29,6 +40,9 @@ export default {
   },
   data() {
     return {
+      showProgress: false,
+      maxProgress: 0,
+      currentProgress: 0,
     };
   },
   computed: {
@@ -44,12 +58,19 @@ export default {
   methods: {
     async doDelete() {
       let res = null;
-      try {
-        res = await this.$http.delete(this.httpModel + `/${this['id']}`);
+      this.showProgress = true;
+
+      let listToDelete = this.id;
+      if(!Array.isArray(this.id))
+          listToDelete = [this.id];
+
+      this.maxProgress = listToDelete.length;
+      for(let item of listToDelete) {
+        await this.$http.delete(this.httpModel + `/${item}`);
+        this.currentProgress += 1;
       }
-      catch(err) {
-        res = err.response.statusText;
-      }
+      this.currentProgress = 0;
+      this.showProgress = false;
       this.$emit('close', res);
     },
     doHide() {

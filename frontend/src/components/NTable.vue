@@ -232,7 +232,12 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
       InitModal(modalVar, row = {}) {
         this[modalVar] = true;
         this.currentRow = row.item ?? {};
-        this.currentId = this.currentRow.id;
+
+        let selectedId = [];
+        if(modalVar == 'showDeleteDialog')
+          selectedId = this.selected.map(x => x.id);
+  
+        this.currentId = selectedId.length ? selectedId : this.currentRow.id;
       },
       DestroyModal(result) {
         this.currentRow = {};

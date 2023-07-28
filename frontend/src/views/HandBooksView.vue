@@ -5,13 +5,12 @@
         <b-button :to="{name: item.name}" variant="primary">
         <b-card
           :img-src="require('../assets/icons/books.png')"
-          tag="article"
-          style="width: 7rem;height: 11rem;"
+          style="min-width: min-content;height: 11rem;"
           class="mb-2"
         >
-        <b-card-text>
-          {{ item.title }}
-        </b-card-text>
+          <b-card-text class="text-dark">
+            {{ item.title }}
+          </b-card-text>
         </b-card>
         </b-button>
       </b-col>
