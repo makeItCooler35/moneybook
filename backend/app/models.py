@@ -5,6 +5,8 @@ from django.db import models
 class Categories(models.Model):
   mcc = models.PositiveIntegerField(blank=False)
   name = models.CharField(max_length=255, blank=False)
+  parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
+  is_folder = models.BooleanField(blank=True, default=False)
 
 class Book(models.Model):
   category = models.ForeignKey(Categories, on_delete=models.PROTECT, default=None, blank=True, null=True)

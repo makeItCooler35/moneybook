@@ -33,19 +33,28 @@
           </b-button>
         </template>
         <template #head(actions)>
-          <b-button variant="primary" @click="InitModal('showUpdInsDialog')">
+          <b-button v-if="!noCreate" variant="primary" title="Создать" @click="InitModal('showUpdInsDialog')">
             +
+          </b-button>
+          <b-button v-if="!noCreateFolder" variant="primary" class="ml-1" title="Создать папку">
+            <b-img :src="require('@/assets/icons/folder.png')"/>
+          </b-button>
+          <b-button v-if="!noMove" variant="primary" class="ml-1" title="Переместить">
+            m
           </b-button>
         </template>
         <template #cell(selected)="{ rowSelected }">
             <span v-if="rowSelected" aria-hidden="true">&check;</span>
             <span v-else aria-hidden="true">&nbsp;</span>
         </template>
+        <template #cell(is_folder)="row">
+          <b-img v-if="row.item.is_folder" :src="require('@/assets/icons/folder.png')"/>
+        </template>
         <template #cell(actions)="row">
-          <b-button class="mx-2" size="sm" variant="warning" @click="InitModal('showUpdInsDialog', row)">
+          <b-button v-if="!noUpdate" class="mx-2" size="sm" variant="warning" @click="InitModal('showUpdInsDialog', row)">
             <b-img :src="require('@/assets/icons/pencil-square.svg')"/>
           </b-button>
-          <b-button size="sm" variant="danger" @click="InitModal('showDeleteDialog', row)">
+          <b-button v-if="!noDelete" size="sm" variant="danger" @click="InitModal('showDeleteDialog', row)">
             <b-img :src="require('@/assets/icons/trash.svg')"/>
           </b-button>
         </template>
@@ -112,6 +121,11 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
     props: {
       httpModel: {type: String, required: true},
       noActions: {type: Boolean, default: false},
+      noDelete: {type: Boolean, default: false},
+      noUpdate: {type: Boolean, default: false},
+      noCreate: {type: Boolean, default: false},
+      noCreateFolder: {type: Boolean, default: false},
+      noMove: {type: Boolean, default: false},
       selectable: {type: Boolean, default: false},
       selectMode: {type:  String, default: 'multi'},
       defaultRowSelected: {type: [Number, null], default: undefined},
@@ -185,6 +199,12 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
           this.title = selection.title;
           this.fields = selection.fields.slice(0);
         }
+        
+        this.fields.unshift({
+          key: 'is_folder',
+          label: '',
+          sortable: false
+        });
 
         if(this.selectable)
         {
@@ -194,7 +214,6 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
             sortable: false
           });
         }
-
         if(!this.noActions)
         {
           this.fields.push({
@@ -224,6 +243,7 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
             const field = fields[num];
             item[field] = row[num];
           }
+
           this.$set(this.items, index, item);
         }
         this.totalRows = data.pagination.count_rows;

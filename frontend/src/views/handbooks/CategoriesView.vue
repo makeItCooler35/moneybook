@@ -1,6 +1,7 @@
 <template>
   <n-table
     http-model="categories"
-    no-actions
+    no-create
+    selectable
   />
 </template>
