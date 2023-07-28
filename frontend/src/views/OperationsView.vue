@@ -1,7 +1,7 @@
 <template>
   <b-container fluid>
     <b-row>
-      <b-col cols="3">
+      <b-col cols="3" class="px-0">
         <b-list-group>
           <b-list-group-item 
             v-for="(item, key) of items"

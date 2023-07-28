@@ -124,7 +124,7 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         currentId: null,
         title: '',
         perPage: 10,
-        perPageOptions: [10, 25, 100, 500, 1500],
+        perPageOptions: [10, 25, 50, 100],
         currentPage: 1,
         totalRows: 0,
         totalPages: 1,
@@ -234,10 +234,11 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         this.currentRow = row.item ?? {};
         this.currentId = this.currentRow.id;
       },
-      DestroyModal() {
+      DestroyModal(result) {
         this.currentRow = {};
         this.currentId = null;
-        this.fetchData();
+        if(result !== undefined)
+          this.fetchData();
       },
       onRowSelected(items) {
         this.selected = items;

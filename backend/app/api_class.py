@@ -78,7 +78,7 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
       method = request.data.get('_method').lower()
       if hasattr(self, method):
         res = getattr(self, method)(request.data)
-        return res
+        return HttpResponse(res)
   
     return generics.CreateAPIView.post(self, request, *args, **kwargs)
   
