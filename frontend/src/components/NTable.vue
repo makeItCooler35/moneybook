@@ -1,7 +1,7 @@
 <template>
   <b-container fluid class="d-flex flex-column">
-    <b-row>
-      <h1 class="text-center">
+    <b-row align-h="center">
+      <h1>
         {{ title }}
       </h1>
     </b-row>
@@ -58,32 +58,30 @@
       </b-table>
     </b-row>
     <b-row class="mt-auto text-center border-bottom justify-content-end p-1">
-      <b-col xl="4" sm="6" class="d-flex flex-row">
-        <b-col cols="4">
-          <b-form-input
-            v-model="currentPage"
-            type="number"
-            min="1"
-            :max="totalPages"
-            class="text-center"
-            :state="stateCurrentPage"
-            @change="OnChangeCurrentPage"
-          />
-        </b-col>
-        <b-col class="text-start mx-2 my-auto">
-          <label>
-            страница из {{ totalPages }}
-          </label>
-        </b-col>
+      <b-col xl="4" sm="6" class="d-flex flex-row" align-content="center">
+        <b-form-input
+          v-model="currentPage"
+          type="number"
+          min="1"
+          :max="totalPages"
+          class="text-center"
+          :state="stateCurrentPage"
+          @change="OnChangeCurrentPage"
+          style="width: max-content;"
+        />
+        <label class="mx-2 my-auto">
+          страница из {{ totalPages }}
+        </label>
       </b-col>
       <b-col xl="4" sm="6">
         <b-form-select
           v-model="perPage"
           :options="perPageOptions"
-          class="h-100 text-center"
+          class="text-center"
           @change="OnChangePerPage"
+          style="width: max-content;"
         />
-        <label class="text-start mx-2 my-auto">
+        <label class="mx-2 my-auto">
           записей
           ({{ totalRows > this.items.length ? this.items.length : totalRows}} из {{ totalRows }})
         </label>
