@@ -19,11 +19,11 @@
         label-sort-asc=""
         label-sort-clear=""
         no-local-sorting
-        @row-selected="onRowSelected"
+        no-select-on-click
         @sort-changed="onSortChanged"
       >
         <template #head(selected)>
-          <b-button variant="outline-dark" @click="onClickToAllSelect">
+          <b-button size="sm" variant="outline-dark" @click="onClickToAllSelect">
             <span
               aria-hidden="true"
               :class="isAllSelected ? `text-dark` : `text-white`"
@@ -33,28 +33,42 @@
           </b-button>
         </template>
         <template #head(actions)>
-          <b-button v-if="!noCreate" variant="primary" title="Создать" @click="InitModal('showUpdInsDialog')">
+          <b-button v-if="!noCreate" size="sm" variant="primary" title="Создать" @click="InitModal('showUpdInsDialog')">
             +
           </b-button>
-          <b-button v-if="!noCreateFolder" variant="primary" class="ml-1" title="Создать папку">
+          <b-button v-if="!noCreateFolder" size="sm" variant="primary" class="ml-1" title="Создать папку">
             <b-img :src="require('@/assets/icons/folder.png')"/>
           </b-button>
-          <b-button v-if="!noMove" variant="primary" class="ml-1" title="Переместить">
+          <b-button v-if="!noMove" size="sm" variant="primary" class="ml-1" title="Переместить">
             m
           </b-button>
         </template>
-        <template #cell(selected)="{ rowSelected }">
-            <span v-if="rowSelected" aria-hidden="true">&check;</span>
-            <span v-else aria-hidden="true">&nbsp;</span>
+        <template #cell(selected)="{item}">
+          <b-button size="sm" variant="outline-dark" @click="OnClickToSelect(item)">
+            <span
+              aria-hidden="true"
+              :class="selected.indexOf(item.id) > -1 ? `text-dark` : `text-white`"
+            >
+              &check;
+            </span>
+          </b-button>
         </template>
-        <template #cell(is_folder)="row">
-          <b-img v-if="row.item.is_folder" :src="require('@/assets/icons/folder.png')"/>
+        <template #cell()="{item, value, field}">
+          <span v-if="item.is_folder">
+            <span v-if="!selfFields.indexOf(field.key)">
+              <b-img :src="require('@/assets/icons/folder.png')"/>
+              {{ item?.[folderName] ?? '' }}
+            </span>
+          </span>
+          <span v-else>
+            {{ value }}
+          </span>
         </template>
-        <template #cell(actions)="row">
-          <b-button v-if="!noUpdate" class="mx-2" size="sm" variant="warning" @click="InitModal('showUpdInsDialog', row)">
+        <template #cell(actions)="{item}">
+          <b-button v-if="!noUpdate" class="mx-2" size="sm" variant="warning" @click="InitModal('showUpdInsDialog', item)">
             <b-img :src="require('@/assets/icons/pencil-square.svg')"/>
           </b-button>
-          <b-button v-if="!noDelete" size="sm" variant="danger" @click="InitModal('showDeleteDialog', row)">
+          <b-button v-if="!noDelete" size="sm" variant="danger" @click="InitModal('showDeleteDialog', item)">
             <b-img :src="require('@/assets/icons/trash.svg')"/>
           </b-button>
         </template>
@@ -128,7 +142,7 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
       noMove: {type: Boolean, default: false},
       selectable: {type: Boolean, default: false},
       selectMode: {type:  String, default: 'multi'},
-      defaultRowSelected: {type: [Number, null], default: undefined},
+      defaultIdSelected: {type: [Number, null], default: undefined},
     },
     data() {
       return {
@@ -144,9 +158,12 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         totalPages: 1,
         items: [],
         fields: [],
+        selfFields: [],
+        folderName: null,
         selected: [],
         sorting: {},
         isBusy: true,
+        firstMounted: true,
       }
     },
     computed: {
@@ -154,11 +171,12 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         return [this.perPage, this.totalRows].indexOf(this.selected.length) > -1;
       },
       stateCurrentPage() {
-        if(1 <= this.currentPage && this.currentPage <= this.totalPages)
+        if(1 <= this.currentPage && this.currentPage <= this.totalPages) {
           return null;
-        else 
+        } else { 
           return false;
-      }
+        }
+      },
     },
     async created() {
       await this.fetchData();
@@ -176,7 +194,8 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
                   perPage: this.perPage,
                   page: this.currentPage
                 },
-                sorting: JSON.stringify(this.sorting)
+                sorting: JSON.stringify(this.sorting),
+                startId: this.firstMounted ? this.defaultIdSelected : 0,
               }
             })
           ).data;
@@ -194,17 +213,14 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
           catch(err) {
             selection.title = "";
             selection.fields = res && res.fields ? res.fields.slice(0) : {};
+            selection.folderName = null;
           }
 
           this.title = selection.title;
+          this.folderName = selection.folderName ?? null;
           this.fields = selection.fields.slice(0);
+          this.selfFields = this.fields.map(x => x.key);
         }
-        
-        this.fields.unshift({
-          key: 'is_folder',
-          label: '',
-          sortable: false
-        });
 
         if(this.selectable)
         {
@@ -248,14 +264,18 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         }
         this.totalRows = data.pagination.count_rows;
         this.totalPages = data.pagination.count_pages;
+        if(this.firstMounted) {
+          this.currentPage = data.pagination.page;
+        }
+        this.firstMounted = false;
       },
-      InitModal(modalVar, row = {}) {
+      InitModal(modalVar, item = {}) {
         this[modalVar] = true;
-        this.currentRow = row.item ?? {};
+        this.currentRow = item;
 
         let selectedId = [];
         if(modalVar == 'showDeleteDialog')
-          selectedId = this.selected.map(x => x.id);
+          selectedId = this.selected;
   
         this.currentId = selectedId.length ? selectedId : this.currentRow.id;
       },
@@ -265,12 +285,6 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         if(result !== undefined)
           this.fetchData();
       },
-      onRowSelected(items) {
-        this.selected = items;
-        if(this.defaultRowSelected !== undefined) {
-          this.$emit('update:fk', this.selected);
-        }
-      },
       onSortChanged(event) {
         this.sorting = {
           sortBy: event.sortBy,
@@ -279,24 +293,34 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         this.fetchData();
       },
       autoSelectRow() {
-        if(this.defaultRowSelected)
-        {
-          for(let index in this.items) {
-            if(this.items[index].id == this.defaultRowSelected) {
-              this.$refs.mainTable.selectRow(+index);
-              break;
-            }
-          }
+        if(this.defaultIdSelected) {
+          this.selected = [this.items.find(x => x.id == this.defaultIdSelected)?.id];
         }
       },
       onClickToAllSelect() {
         if(this.selectMode == 'multi') {
           if(this.isAllSelected) {
-            this.$refs.mainTable.clearSelected();
+            this.selected = [];
+          } else {
+            this.selected = this.items.map(x => x.id);
           }
-          else {
-            this.$refs.mainTable.selectAllRows();
+        }
+      },
+      OnClickToSelect(item) {
+        const index = this.selected.indexOf(item.id);
+        if(index > -1) {
+          this.selected.splice(index, 1);
+        } else {
+          if(this.selectMode == 'single') {
+            this.selected = [];
           }
+
+          this.selected.push(item.id);
+        }
+
+        if(this.defaultIdSelected !== undefined) {
+          const elem = this.items.find(x => x.id == item.id);
+          this.$emit('update:fk', elem);
         }
       },
       async OnChangePerPage() {

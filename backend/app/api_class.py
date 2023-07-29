@@ -3,6 +3,7 @@ from rest_framework import generics
 from django.core.paginator import Paginator
 from django.http import HttpResponse
 import json
+import math
 
 class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
   def prepare_req_params(self, params):
@@ -36,6 +37,7 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
 
   def get(self, request, *args, **kwargs):
     req_params = self.prepare_req_params(request.query_params)
+    req_params_keys = list(req_params.keys())
     qs = None
     if 'pk' in kwargs:
       qs = [self.objects.get(pk=kwargs['pk'])]
@@ -50,6 +52,14 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
     try:
       per_page = int(req_params['pagination']['perPage'])
       page = int(req_params['pagination']['page'])
+      if 'startId' in req_params_keys and req_params['startId'] > 0:
+        row = [self.objects.get(pk=req_params['startId'])]
+        dt = serializer(row, many=True).data
+        lt = {
+          sort+"__lt": dt[0][sort]
+        }
+        cnt = qs.filter(**lt).count() + 1
+        page = math.ceil(cnt / per_page)
     except:
       per_page = 10
       page = 1
@@ -58,13 +68,15 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
     try:
       data_page = paginator.page(page)
     except:
-      data_page = paginator.page(1)
+      page = 1
+      data_page = paginator.page(page)
     
     dt = serializer(data_page, many=True)
     data = self.parse_get_data(dt.data)
     data['pagination'] = {}
     data['pagination']['count_rows'] = paginator.count
     data['pagination']['count_pages'] = paginator.num_pages
+    data['pagination']['page'] = page
     return Response(data)
   
   def patch(self, request, *args, **kwargs):

@@ -19,7 +19,7 @@
           <b-col>
             <n-table2
               :http-model="httpModel"
-              :default-row-selected="currentId"
+              :default-id-selected="currentId"
               no-actions
               selectable
               select-mode="single"
@@ -63,8 +63,8 @@ export default {
       this.$emit("update:fk", {currentId: this.currentId, bindField: this.bindField});
     },
     OnUpdateFK(item) {
-      this.currentId = item[0].id;
-      this.currentValue = item[0][this.bindKey];
+      this.currentId = item.id;
+      this.currentValue = item[this.bindKey];
     },
   },
   mounted() {

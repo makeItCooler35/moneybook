@@ -1,6 +1,7 @@
 export default
 {
   title: "Категории",
+  folderName: "name",
   fields: [
     {
       key: 'mcc',
