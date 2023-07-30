@@ -367,8 +367,9 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
           } else {
             this.$router.push({query: {}});
           }
+        } else {
+          this.fetchData();
         }
-        this.fetchData();
       },
       async OnChangePerPage() {
         await this.fetchData();
