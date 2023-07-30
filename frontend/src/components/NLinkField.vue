@@ -21,8 +21,10 @@
               :http-model="httpModel"
               :default-id-selected="currentId"
               no-actions
+              is-modal
               selectable
               select-mode="single"
+              no-select-folder
               @update:fk="OnUpdateFK"
             />
           </b-col>

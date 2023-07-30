@@ -37,27 +37,39 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
 
   def get(self, request, *args, **kwargs):
     req_params = self.prepare_req_params(request.query_params)
-    req_params_keys = list(req_params.keys())
     qs = None
     if 'pk' in kwargs:
       qs = [self.objects.get(pk=kwargs['pk'])]
     else:
       sort = getattr(self, 'default_sorting', 'id')
-      if 'sorting' in req_params and len(req_params['sorting']):
-        sort = self.__create_sort_str(req_params['sorting'])
-      qs = self.get_queryset().order_by(sort)
+      sorting = req_params.get('sorting', {})
+      if len(req_params['sorting']):
+        sort = self.__create_sort_str(sorting)
+
+      parent = req_params.get('parent', None)
+      if parent:
+        qs = self.get_queryset().filter(parent=parent)
+      else:
+        qs = self.get_queryset()
+  
+      qs = qs.order_by(sort)
 
     serializer = self.get_serializer_class()
 
     try:
       per_page = int(req_params['pagination']['perPage'])
       page = int(req_params['pagination']['page'])
-      if 'startId' in req_params_keys and req_params['startId'] > 0:
-        row = [self.objects.get(pk=req_params['startId'])]
-        dt = serializer(row, many=True).data
+      start_id = req_params.get('startId', 0)
+      if start_id:
+        row = [self.objects.get(pk=start_id)]
+        dt = (serializer(row, many=True).data)[0]
         lt = {
-          sort+"__lt": dt[0][sort]
+          sort+"__lt": dt[sort],
         }
+        parent = dt.get('parent', None)
+        if parent:
+          qs = qs.filter(parent=parent)
+        
         cnt = qs.filter(**lt).count() + 1
         page = math.ceil(cnt / per_page)
     except:
@@ -77,6 +89,7 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
     data['pagination']['count_rows'] = paginator.count
     data['pagination']['count_pages'] = paginator.num_pages
     data['pagination']['page'] = page
+    data['pagination']['parent'] = locals().get('parent')
     return Response(data)
   
   def patch(self, request, *args, **kwargs):

@@ -4,7 +4,7 @@
       <side-bar/>
     </b-row>
     <b-row style="height: 90%;">
-      <router-view/>
+      <router-view :key="$route.query?.parent"/>
     </b-row>
   </b-container>
 </template>

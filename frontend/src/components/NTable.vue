@@ -1,7 +1,18 @@
 <template>
   <b-container fluid class="d-flex flex-column">
-    <b-row align-h="center">
-      <h1>
+    <b-row align-v="end">
+      <b-button
+        size="sm"
+        variant="primary"
+        class="m-1"
+        style="max-height: 50%;width: max-content;"
+        :disabled="!currentParent"
+        title="Подняться по иерархии"
+        @click="OnReduceHierarchy"
+      >
+        &lt;
+      </b-button>
+      <h1 class="mx-auto">
         {{ title }}
       </h1>
     </b-row>
@@ -33,13 +44,13 @@
           </b-button>
         </template>
         <template #head(actions)>
-          <b-button v-if="!noCreate" size="sm" variant="primary" title="Создать" @click="InitModal('showUpdInsDialog')">
+          <b-button v-if="!noCreate" size="sm" variant="primary" class="mx-1" title="Создать" @click="InitModal('showUpdInsDialog')">
             +
           </b-button>
-          <b-button v-if="!noCreateFolder" size="sm" variant="primary" class="ml-1" title="Создать папку">
+          <b-button v-if="!noCreateFolder" size="sm" variant="primary" class="mx-1" title="Создать папку">
             <b-img :src="require('@/assets/icons/folder.png')"/>
           </b-button>
-          <b-button v-if="!noMove" size="sm" variant="primary" class="ml-1" title="Переместить">
+          <b-button v-if="!noMove" size="sm" variant="primary" class="mx-1" title="Переместить">
             m
           </b-button>
         </template>
@@ -55,10 +66,13 @@
         </template>
         <template #cell()="{item, value, field}">
           <span v-if="item.is_folder">
-            <span v-if="!selfFields.indexOf(field.key)">
-              <b-img :src="require('@/assets/icons/folder.png')"/>
-              {{ item?.[folderName] ?? '' }}
-            </span>
+            <b-img
+              v-if="!selfFields.indexOf(field.key)"
+              style="cursor: pointer;"
+              :src="require('@/assets/icons/folder.png')"
+              @click="OnClickFolder(item)"
+            />
+            {{ item?.[folderName] ?? '' }}
           </span>
           <span v-else>
             {{ value }}
@@ -142,7 +156,9 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
       noMove: {type: Boolean, default: false},
       selectable: {type: Boolean, default: false},
       selectMode: {type:  String, default: 'multi'},
+      noSelectFolder: {type: Boolean, default: false},
       defaultIdSelected: {type: [Number, null], default: undefined},
+      isModal: {type: Boolean, default: false}
     },
     data() {
       return {
@@ -164,6 +180,7 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         sorting: {},
         isBusy: true,
         firstMounted: true,
+        currentParent: this.isModal ? null : this.$route.query?.parent,
       }
     },
     computed: {
@@ -196,10 +213,19 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
                 },
                 sorting: JSON.stringify(this.sorting),
                 startId: this.firstMounted ? this.defaultIdSelected : 0,
+                parent: this.currentParent
               }
             })
           ).data;
-          this.prepareData(res);
+          this.items = [];
+          this.items = this.prepareData(res);
+
+          this.totalRows = res.pagination.count_rows;
+          this.totalPages = res.pagination.count_pages;
+          if(this.firstMounted) {
+            this.currentPage = res.pagination.page;
+          }
+          this.firstMounted = false;
         }
         catch(err) {
           console.log(err);
@@ -249,7 +275,7 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         this.isBusy = false;
       },
       prepareData(data) {
-        this.items = [];
+        let arr = [];
         const rows = data.rows;
         const fields = data.fields;
         for(const index in rows) {
@@ -259,15 +285,9 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
             const field = fields[num];
             item[field] = row[num];
           }
-
-          this.$set(this.items, index, item);
+          arr.push(item);
         }
-        this.totalRows = data.pagination.count_rows;
-        this.totalPages = data.pagination.count_pages;
-        if(this.firstMounted) {
-          this.currentPage = data.pagination.page;
-        }
-        this.firstMounted = false;
+        return arr;
       },
       InitModal(modalVar, item = {}) {
         this[modalVar] = true;
@@ -294,7 +314,9 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
       },
       autoSelectRow() {
         if(this.defaultIdSelected) {
-          this.selected = [this.items.find(x => x.id == this.defaultIdSelected)?.id];
+          const target = this.items.find(x => x.id == this.defaultIdSelected);
+          this.selected = [target?.id];
+          this.currentParent = target?.parent ?? null;
         }
       },
       onClickToAllSelect() {
@@ -307,6 +329,10 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         }
       },
       OnClickToSelect(item) {
+        if(this.noSelectFolder && item.is_folder) {
+          return false;
+        }
+
         const index = this.selected.indexOf(item.id);
         if(index > -1) {
           this.selected.splice(index, 1);
@@ -322,6 +348,27 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
           const elem = this.items.find(x => x.id == item.id);
           this.$emit('update:fk', elem);
         }
+      },
+      OnClickFolder(item) {
+        this.currentParent = item.id;
+        if(!this.isModal) {
+          this.$router.push({query: {parent: this.currentParent}});
+        } else {
+          this.fetchData();
+        }
+      },
+      async OnReduceHierarchy() {
+        const res = (await this.$http.get(`${this.httpModel}/${this.currentParent}`)).data;
+        const item = this.prepareData(res)[0];
+        this.currentParent = item.parent ?? null;
+        if(!this.isModal) {
+          if(this.parent) {
+            this.$router.push({query: {parent: this.currentParent}});
+          } else {
+            this.$router.push({query: {}});
+          }
+        }
+        this.fetchData();
       },
       async OnChangePerPage() {
         await this.fetchData();
