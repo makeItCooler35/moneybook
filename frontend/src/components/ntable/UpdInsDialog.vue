@@ -1,44 +1,43 @@
 <template>
-    <b-modal
-      v-model="show"
-      button-size="sm"
-      hide-header
-      centered
-      @ok="doUpdIns"
-      @hidden="doHide"
-      ok-title="Сохранить"
-      cancel-title="Отменить"
-      :ok-disabled="!isChanged"
-    >
-      <b-container>
-        <b-row v-for="(header, key) of headers" :key="key" class="mb-2">
-          <b-col>
-            {{ header.label }}
-          </b-col>
-          <b-col>
-            <n-link-field
-              v-if="header.type==='link'"
-              :id="currentRow[header.bindField]"
-              :value="currentRow[header.key]"
-              :http-model="header.model"
-              :bind-field="header.bindField"
-              :bind-key="header.bindKey"
-              @input="OnInputFK($event, header)"
-            />
-            <input
-              v-else-if="header.type=='datetime'"
-              v-model="currentRow[header.key]"
-              type="datetime-local"
-              class="w-100"
-            >
-            <b-input
-              v-else
-              v-model="currentRow[header.key]"
-              :type="header.type || 'text'"
-            />
-          </b-col>
-        </b-row>
-      </b-container>
+  <b-modal
+    v-model="show"
+    centered
+    @ok="doUpdIns"
+    @hidden="doHide"
+    ok-title="Сохранить"
+    cancel-title="Отменить"
+    cancel-variant="danger"
+    :ok-disabled="!isChanged"
+  >
+    <b-container>
+      <b-row v-for="(header, key) of headers" :key="key" class="mb-2">
+        <b-col>
+          {{ header.label }}
+        </b-col>
+        <b-col>
+          <n-link-field
+            v-if="header.type==='link'"
+            :id="currentRow[header.bindField]"
+            :value="currentRow[header.key]"
+            :http-model="header.model"
+            :bind-field="header.bindField"
+            :bind-key="header.bindKey"
+            @input="OnInputFK($event, header)"
+          />
+          <input
+            v-else-if="header.type=='datetime'"
+            v-model="currentRow[header.key]"
+            type="datetime-local"
+            class="w-100"
+          >
+          <b-input
+            v-else
+            v-model="currentRow[header.key]"
+            :type="header.type || 'text'"
+          />
+        </b-col>
+      </b-row>
+    </b-container>
   </b-modal>
 </template>
 

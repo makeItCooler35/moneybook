@@ -2,8 +2,6 @@
   <b-container fluid class="d-flex flex-column">
     <b-row align-v="end">
       <b-button
-        size="sm"
-        variant="primary"
         class="m-1"
         style="max-height: 50%;width: max-content;"
         :disabled="!currentParent"
@@ -34,7 +32,7 @@
         @sort-changed="onSortChanged"
       >
         <template #head(selected)>
-          <b-button size="sm" variant="outline-dark" @click="onClickToAllSelect">
+          <b-button variant="outline-dark" @click="onClickToAllSelect">
             <span
               aria-hidden="true"
               :class="isAllSelected ? `text-dark` : `text-white`"
@@ -44,18 +42,18 @@
           </b-button>
         </template>
         <template #head(actions)>
-          <b-button v-if="!noCreate" size="sm" variant="primary" class="mx-1" title="Создать" @click="InitModal('showUpdInsDialog')">
+          <b-button v-if="!noCreate" class="mx-1" title="Создать" @click="InitModal('showUpdInsDialog')">
             +
           </b-button>
-          <b-button v-if="!noCreateFolder" size="sm" variant="primary" class="mx-1" title="Создать папку">
+          <b-button v-if="!noCreateFolder" class="mx-1" title="Создать папку">
             <b-img :src="require('@/assets/icons/folder.png')"/>
           </b-button>
-          <b-button v-if="!noMove" size="sm" variant="primary" class="mx-1" title="Переместить">
+          <b-button v-if="!noMove" class="mx-1" title="Переместить">
             m
           </b-button>
         </template>
         <template #cell(selected)="{item}">
-          <b-button size="sm" variant="outline-dark" @click="OnClickToSelect(item)">
+          <b-button variant="outline-dark" @click="OnClickToSelect(item)">
             <span
               aria-hidden="true"
               :class="selected.indexOf(item.id) > -1 ? `text-dark` : `text-white`"
@@ -79,10 +77,19 @@
           </span>
         </template>
         <template #cell(actions)="{item}">
-          <b-button v-if="!noUpdate" class="mx-2" size="sm" variant="warning" @click="InitModal('showUpdInsDialog', item)">
+          <b-button
+            v-if="!noUpdate"
+            class="mx-1"
+            variant="warning"
+            @click="InitModal('showUpdInsDialog', item)"
+          >
             <b-img :src="require('@/assets/icons/pencil-square.svg')"/>
           </b-button>
-          <b-button v-if="!noDelete" size="sm" variant="danger" @click="InitModal('showDeleteDialog', item)">
+          <b-button
+            v-if="!noDelete"
+            variant="danger"
+            @click="InitModal('showDeleteDialog', item)"
+          >
             <b-img :src="require('@/assets/icons/trash.svg')"/>
           </b-button>
         </template>

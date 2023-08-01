@@ -5,8 +5,6 @@
     </b-button>
     <b-modal
       v-model="toShow"
-      button-size="sm"
-      hide-header
       size="xl"
       @ok="OnEmit"
       @cancel="OnHide"

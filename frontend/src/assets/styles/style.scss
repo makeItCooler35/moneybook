@@ -1,0 +1,18 @@
+$primary: #0D6EFD;
+$padding-sm: .25rem .5rem;
+$font-size-sm: .875rem;
+
+.btn-secondary, .btn-secondary.disabled {
+  background-color: #0D6EFD;
+}
+
+.btn {
+  padding: $padding-sm;
+  font-size: $font-size-sm;
+}
+
+.modal-dialog{
+  .modal-header {
+    display: none;
+  }
+}
