@@ -18,12 +18,12 @@
           <b-col>
             <n-link-field
               v-if="header.type==='link'"
+              :id="currentRow[header.bindField]"
+              :value="currentRow[header.key]"
               :http-model="header.model"
-              :start-value="currentRow[header.key]"
-              :start-id="currentRow[header.bindField]"
               :bind-field="header.bindField"
               :bind-key="header.bindKey"
-              @update:fk="OnUpdateFK"
+              @input="OnInputFK($event, header)"
             />
             <input
               v-else-if="header.type=='datetime'"
@@ -98,8 +98,9 @@ export default {
       this.show = false;
       this.$emit('close');
     },
-    OnUpdateFK(item) {
-      this.$set(this.currentRow, `${item.bindField}`, item.currentId);
+    OnInputFK(item, header) {
+      this.$set(this.currentRow, header.bindField, item.id);
+      this.$set(this.currentRow, header.key, item.value);
     }
   },
   watch: {

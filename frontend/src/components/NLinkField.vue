@@ -8,7 +8,8 @@
       button-size="sm"
       hide-header
       size="xl"
-      @ok="makeEmit"
+      @ok="OnEmit"
+      @cancel="OnHide"
       ok-title="Выбрать"
       ok-variant="danger"
       cancel-title="Выйти"
@@ -40,8 +41,8 @@ export default {
   props: {
     httpModel: {type: String, required: true},
     show: {type: Boolean, default: false},
-    startValue: {default: ''},
-    startId: {type: Number, default: null},
+    id: {type: Number, default: null},
+    value: {default: ''},
     bindKey: {type: String, default: 'name'},
     bindField: {type: String, required: true}
   },
@@ -50,28 +51,28 @@ export default {
       return this.currentValue || "Установите связь";
     },
     isChanged() {
-      return this.startId != this.currentId;
+      return this.id != this.currentId;
     }
   },
   data() {
     return {
       toShow: false,
-      currentValue: null,
-      currentId: null,
+      currentId: this.id,
+      currentValue: this.value,
     };
   },
   methods: {
-    makeEmit() {
-      this.$emit("update:fk", {currentId: this.currentId, bindField: this.bindField});
+    OnEmit() {
+      this.$emit('input', {id: this.currentId, value: this.currentValue});
+    },
+    OnHide() {
+      this.currentId = this.id;
+      this.currentValue = this.value;
     },
     OnUpdateFK(item) {
       this.currentId = item.id;
       this.currentValue = item[this.bindKey];
     },
-  },
-  mounted() {
-    this.currentId = this.startId;
-    this.currentValue = this.startValue;
   },
 }
 </script>
