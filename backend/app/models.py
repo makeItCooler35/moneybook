@@ -7,6 +7,13 @@ class Categories(models.Model):
   name = models.CharField(max_length=255, blank=False)
   parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
   is_folder = models.BooleanField(blank=True, default=False)
+  class Meta:
+    constraints = [
+      models.CheckConstraint(
+        check=~models.Q(id=models.F('parent')),
+        name='%(app_label)s_%(class)s_id_is_not_same_parent',
+      )
+    ]
 
 class Book(models.Model):
   category = models.ForeignKey(Categories, on_delete=models.PROTECT, default=None, blank=True, null=True)

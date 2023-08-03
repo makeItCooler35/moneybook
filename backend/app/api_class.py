@@ -47,7 +47,8 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
         sort = self.__create_sort_str(sorting)
 
       parent = req_params.get('parent', None)
-      if parent:
+      if parent != None:
+        parent = None if parent == 0 else parent
         qs = self.get_queryset().filter(parent=parent)
       else:
         qs = self.get_queryset()
@@ -95,6 +96,10 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
   def patch(self, request, *args, **kwargs):
     return generics.RetrieveUpdateDestroyAPIView.patch(self, request, *args, **kwargs)
 
+  def move(self, data):
+    parent = data['pk'] if data['pk'] else None
+    return self.objects.filter(pk__in=data['items']).update(parent=parent)
+
   def post(self, request, *args, **kwargs):
     # доп метод перехватываем
     if bool(request.data.get('_method')):
@@ -102,8 +107,18 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
         request.data['pk'] = kwargs['pk']
       method = request.data.get('_method').lower()
       if hasattr(self, method):
-        res = getattr(self, method)(request.data)
-        return HttpResponse(res)
+        try:
+          res = getattr(self, method)(request.data)
+          return HttpResponse(json.dumps({'data': res}))
+        except Exception as e:
+          pgcode = getattr(e.__cause__, 'pgcode', False) if getattr(e, '__cause__', False) else None
+          message = str(e)
+          return HttpResponse(json.dumps({
+            'error': {
+              'pgcode': pgcode,
+              'message': message
+            }
+          }, ensure_ascii=False,))
   
     return generics.CreateAPIView.post(self, request, *args, **kwargs)
   

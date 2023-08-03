@@ -29,9 +29,9 @@
         label-sort-clear=""
         no-local-sorting
         no-select-on-click
-        @sort-changed="onSortChanged"
+        @sort-changed="OnSortChanged"
       >
-        <template #head(selected)>
+        <template #head(selected) v-if="!moveMode">
           <b-button variant="outline-dark" @click="onClickToAllSelect">
             <span
               aria-hidden="true"
@@ -42,17 +42,33 @@
           </b-button>
         </template>
         <template #head(actions)>
-          <b-button v-if="!noCreate" class="mx-1" title="Создать" @click="InitModal('showUpdInsDialog')">
-            +
-          </b-button>
-          <b-button v-if="!noCreateFolder" class="mx-1" title="Создать папку">
-            <b-img :src="require('@/assets/icons/folder.png')"/>
-          </b-button>
-          <b-button v-if="!noMove" class="mx-1" title="Переместить">
-            m
-          </b-button>
+          <b-container v-if="!moveMode" fluid>
+            <b-button v-if="!noCreate" class="mx-1" title="Создать" @click="InitModal('showUpdInsDialog')">
+              +
+            </b-button>
+            <b-button v-if="!noCreateFolder" class="mx-1" title="Создать папку">
+              <b-img :src="require('@/assets/icons/folder.png')"/>
+            </b-button>
+            <b-button
+              v-if="!noMove && selectable"
+              class="mx-1"
+              title="Переместить"
+              :disabled="!Boolean(selected.length)"
+              @click="moveMode = true"
+            >
+              m
+            </b-button>
+          </b-container>
+          <b-container v-else fluid>
+            <b-button class="mx-1" @click="OnClickEmitMove">
+              Переместить сюда
+            </b-button>
+            <b-button variant="danger" @click="moveMode = false">
+              Отмена
+            </b-button>
+          </b-container>
         </template>
-        <template #cell(selected)="{item}">
+        <template #cell(selected)="{item}" v-if="!moveMode">
           <b-button variant="outline-dark" @click="OnClickToSelect(item)">
             <span
               aria-hidden="true"
@@ -64,19 +80,20 @@
         </template>
         <template #cell()="{item, value, field}">
           <span v-if="item.is_folder">
-            <b-img
-              v-if="!selfFields.indexOf(field.key)"
-              style="cursor: pointer;"
-              :src="require('@/assets/icons/folder.png')"
-              @click="OnClickFolder(item)"
-            />
-            {{ item?.[folderName] ?? '' }}
+            <span v-if="!selfFields.indexOf(field.key)">
+              <b-img
+                style="cursor: pointer;"
+                :src="require('@/assets/icons/folder.png')"
+                @click="OnClickFolder(item)"
+              />
+              {{ item?.[folderName] ?? '' }}
+            </span>
           </span>
           <span v-else>
             {{ value }}
           </span>
         </template>
-        <template #cell(actions)="{item}">
+        <template #cell(actions)="{item}" v-if="!moveMode">
           <b-button
             v-if="!noUpdate"
             class="mx-1"
@@ -165,7 +182,7 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
       selectMode: {type:  String, default: 'multi'},
       noSelectFolder: {type: Boolean, default: false},
       defaultIdSelected: {type: [Number, null], default: undefined},
-      isModal: {type: Boolean, default: false}
+      isModal: {type: Boolean, default: true}
     },
     data() {
       return {
@@ -187,7 +204,8 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         sorting: {},
         isBusy: true,
         firstMounted: true,
-        currentParent: this.isModal ? null : this.$route.query?.parent,
+        currentParent: this.isModal ? 0 : this.$route.query?.parent,
+        moveMode: false,
       }
     },
     computed: {
@@ -312,7 +330,7 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         if(result !== undefined)
           this.fetchData();
       },
-      onSortChanged(event) {
+      OnSortChanged(event) {
         this.sorting = {
           sortBy: event.sortBy,
           sortDesc: event.sortDesc
@@ -323,7 +341,7 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         if(this.defaultIdSelected) {
           const target = this.items.find(x => x.id == this.defaultIdSelected);
           this.selected = [target?.id];
-          this.currentParent = target?.parent ?? null;
+          this.currentParent = target?.parent ?? 0;
         }
       },
       onClickToAllSelect() {
@@ -367,7 +385,7 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
       async OnReduceHierarchy() {
         const res = (await this.$http.get(`${this.httpModel}/${this.currentParent}`)).data;
         const item = this.prepareData(res)[0];
-        this.currentParent = item.parent ?? null;
+        this.currentParent = item.parent ?? 0;
         if(!this.isModal) {
           if(this.parent) {
             this.$router.push({query: {parent: this.currentParent}});
@@ -387,7 +405,20 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         if(this.stateCurrentPage == null) {
           this.fetchData();
         }
-      }
+      },
+      async OnClickEmitMove() {
+        try {
+          this.$http.post(`${this.httpModel}/${this.currentParent}`, {
+          _method: 'move',
+          items: this.selected,
+        }).data;
+        } catch(err) {
+          console.log(err);
+        }
+        this.moveMode = false;
+        this.selected = [];
+        this.fetchData();
+      },
     },
   }
 </script>
