@@ -49,8 +49,10 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
       parent = req_params.get('parent', None)
       if parent != None:
         parent = None if parent == 0 else parent
+
+      try:
         qs = self.get_queryset().filter(parent=parent)
-      else:
+      except:
         qs = self.get_queryset()
   
       qs = qs.order_by(sort)

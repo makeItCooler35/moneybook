@@ -10,7 +10,7 @@
     :ok-disabled="!isChanged"
   >
     <b-container>
-      <b-row v-for="(header, key) of headers" :key="key" class="mb-2">
+      <b-row v-for="(header, key) of fields" :key="key" class="mb-2">
         <b-col>
           {{ header.label }}
         </b-col>
@@ -60,9 +60,6 @@ export default {
     };
   },
   computed: {
-    headers() {
-      return this.fields.filter(field => field.label || '' != '');
-    },
     isChanged() {
       const exch = Object.values(this.currentRow).filter(x => !Object.values(this.startRow).includes(x));
       return Boolean(exch.length);

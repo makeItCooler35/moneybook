@@ -46,7 +46,7 @@
             <b-button v-if="!noCreate" class="mx-1" title="Создать" @click="InitModal('showUpdInsDialog')">
               +
             </b-button>
-            <b-button v-if="!noCreateFolder" class="mx-1" title="Создать папку">
+            <b-button v-if="!noCreateFolder" class="mx-1" title="Создать папку" @click="InitModal('showUpdInsDialog', {}, true)">
               <b-img :src="require('@/assets/icons/folder.png')"/>
             </b-button>
             <b-button
@@ -158,7 +158,7 @@
       v-model="showUpdInsDialog"
       :http-model="httpModel"
       :id="currentId"
-      :fields="fields"
+      :fields="fields.filter(x => x.label || '' != '')"
       :start-row="currentRow"
       @close="DestroyModal"
     />
@@ -191,7 +191,7 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         currentRow: {},
         currentId: null,
         title: '',
-        perPage: 10,
+        perPage: this.$store.state.perPage ?? 10,
         perPageOptions: [10, 25, 50, 100],
         currentPage: 1,
         totalRows: 0,
@@ -314,9 +314,10 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         }
         return arr;
       },
-      InitModal(modalVar, item = {}) {
+      InitModal(modalVar, item = {}, folder = false) {
         this[modalVar] = true;
         this.currentRow = item;
+        this.currentRow.is_folder = folder;
 
         let selectedId = [];
         if(modalVar == 'showDeleteDialog')
@@ -400,6 +401,8 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         await this.fetchData();
         if(this.stateCurrentPage === false)
           this.currentPage = 1;
+
+        this.$store.commit('changePerPage', this.perPage);
       },
       OnChangeCurrentPage() {
         if(this.stateCurrentPage == null) {

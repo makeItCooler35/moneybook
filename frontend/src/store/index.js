@@ -5,10 +5,14 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
+    perPage: 10,
   },
   getters: {
   },
   mutations: {
+    changePerPage(state, value) {
+      state.perPage = value;
+    }
   },
   actions: {
   },
