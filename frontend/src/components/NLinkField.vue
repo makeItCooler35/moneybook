@@ -5,7 +5,7 @@
     </b-button>
     <b-modal
       v-model="toShow"
-      size="xl"
+      size="lg"
       @ok="OnEmit"
       @cancel="OnHide"
       ok-title="Выбрать"

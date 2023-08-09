@@ -11,8 +11,21 @@ $font-size-sm: .875rem;
   font-size: $font-size-sm;
 }
 
-.modal-dialog{
+.modal-dialog {
   .modal-header {
     display: none;
   }
+}
+
+h1 {
+  margin: auto;
+}
+
+.b-form-component {
+  width: max-content;
+  text-align: center;
+}
+
+.pointer {
+  cursor: pointer;
 }

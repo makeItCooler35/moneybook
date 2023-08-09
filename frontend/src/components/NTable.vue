@@ -3,20 +3,18 @@
     <b-row align-v="end">
       <b-button
         class="m-1"
-        style="max-height: 50%;width: max-content;"
         :disabled="!currentParent"
         title="Подняться по иерархии"
         @click="OnReduceHierarchy"
       >
         &lt;
       </b-button>
-      <h1 class="mx-auto">
+      <h1>
         {{ title }}
       </h1>
     </b-row>
     <b-row>
       <b-table
-        ref="mainTable"
         :fields="fields"
         :items="items"
         :per-page="perPage"
@@ -82,9 +80,9 @@
           <span v-if="item.is_folder">
             <span v-if="!selfFields.indexOf(field.key)">
               <b-img
-                style="cursor: pointer;"
                 :src="require('@/assets/icons/folder.png')"
                 @click="OnClickFolder(item)"
+                class="pointer"
               />
               {{ item?.[folderName] ?? '' }}
             </span>
@@ -119,28 +117,26 @@
       </b-table>
     </b-row>
     <b-row class="mt-auto text-center border-bottom justify-content-end p-1">
-      <b-col xl="4" sm="6" class="d-flex flex-row" align-content="center">
+      <b-col xl="5" sm="6" class="d-flex flex-row" align-content="center">
         <b-form-input
           v-model="currentPage"
           type="number"
           min="1"
           :max="totalPages"
-          class="text-center"
           :state="stateCurrentPage"
           @change="OnChangeCurrentPage"
-          style="width: max-content;"
+          class="b-form-component"
         />
         <label class="mx-2 my-auto">
           страница из {{ totalPages }}
         </label>
       </b-col>
-      <b-col xl="4" sm="6">
+      <b-col xl="5" sm="6">
         <b-form-select
           v-model="perPage"
           :options="perPageOptions"
-          class="text-center"
           @change="OnChangePerPage"
-          style="width: max-content;"
+          class="b-form-component"
         />
         <label class="mx-2 my-auto">
           записей
@@ -210,7 +206,7 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
     },
     computed: {
       isAllSelected() {
-        return [this.perPage, this.totalRows].indexOf(this.selected.length) > -1;
+        return [this.perPage, this.totalRows].indexOf(this.selected.length) > -1 && this.selected.length;
       },
       stateCurrentPage() {
         if(1 <= this.currentPage && this.currentPage <= this.totalPages) {
