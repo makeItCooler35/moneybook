@@ -10,7 +10,7 @@ export default new Vuex.Store({
   getters: {
   },
   mutations: {
-    changePerPage(state, value) {
+    "CHANGE_PER_PAGE"(state, value) {
       state.perPage = value;
     }
   },

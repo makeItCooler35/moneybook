@@ -245,14 +245,13 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
           this.items = [];
           this.items = this.prepareData(res);
 
-          this.totalRows = res.pagination.count_rows;
-          this.totalPages = res.pagination.count_pages;
+          this.totalRows = res.service.count_rows;
+          this.totalPages = res.service.count_pages;
           if(this.firstMounted) {
-            this.currentPage = res.pagination.page;
+            this.currentPage = res.service.page;
           }
           this.firstMounted = false;
-        }
-        catch(err) {
+        } catch(err) {
           console.log(err);
         }
 
@@ -402,7 +401,7 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         if(this.stateCurrentPage === false)
           this.currentPage = 1;
 
-        this.$store.commit('changePerPage', this.perPage);
+        this.$store.commit('CHANGE_PER_PAGE', this.perPage);
       },
       OnChangeCurrentPage() {
         if(this.stateCurrentPage == null) {
@@ -410,14 +409,11 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
         }
       },
       async OnClickEmitMove() {
-        try {
-          this.$http.post(`${this.httpModel}/${this.currentParent}`, {
+        await this.$http.post(`${this.httpModel}/${this.currentParent}`, {
           _method: 'move',
           items: this.selected,
         }).data;
-        } catch(err) {
-          console.log(err);
-        }
+
         this.moveMode = false;
         this.selected = [];
         this.fetchData();

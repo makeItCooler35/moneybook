@@ -76,17 +76,13 @@ export default {
   methods: {
     async doUpdIns() {
       let res = "";
-      try {
-        if(this.id) {
-          res = await this.$http.patch(this.httpModel + `/${this.id}`, this.currentRow);
-        }
-        else {
-          res = await this.$http.post(this.httpModel, this.currentRow);
-        }
+      if(this.id) {
+        await this.$http.patch(this.httpModel + `/${this.id}`, this.currentRow);
       }
-      catch(err) {
-        res = err;
+      else {
+        await this.$http.post(this.httpModel, this.currentRow);
       }
+
       this.show = false;
       this.$emit('close', res);
     },

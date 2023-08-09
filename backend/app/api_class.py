@@ -88,11 +88,11 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
     
     dt = serializer(data_page, many=True)
     data = self.parse_get_data(dt.data)
-    data['pagination'] = {}
-    data['pagination']['count_rows'] = paginator.count
-    data['pagination']['count_pages'] = paginator.num_pages
-    data['pagination']['page'] = page
-    data['pagination']['parent'] = locals().get('parent')
+    data['service'] = {}
+    data['service']['count_rows'] = paginator.count
+    data['service']['count_pages'] = paginator.num_pages
+    data['service']['page'] = page
+    data['service']['parent'] = locals().get('parent')
     return Response(data)
   
   def patch(self, request, *args, **kwargs):
@@ -120,7 +120,7 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
               'pgcode': pgcode,
               'message': message
             }
-          }, ensure_ascii=False,))
+          }, ensure_ascii=False), status=500)
   
     return generics.CreateAPIView.post(self, request, *args, **kwargs)
   
