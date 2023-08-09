@@ -316,7 +316,7 @@ import UpdInsDialog from './ntable/UpdInsDialog.vue';
       InitModal(modalVar, item = {}, folder = false) {
         this[modalVar] = true;
         this.currentRow = item;
-        this.currentRow.is_folder = folder;
+        this.currentRow.is_folder = item.is_folder ?? folder;
 
         let selectedId = [];
         if(modalVar == 'showDeleteDialog')
