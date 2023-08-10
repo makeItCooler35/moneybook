@@ -126,7 +126,10 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
   
   def delete(self, request, *args, **kwargs):
     try:
-      generics.RetrieveUpdateDestroyAPIView.delete(self, request, *args, **kwargs)
-      return HttpResponse("ОК")
-    except:
-      return HttpResponse("False")
+      return generics.RetrieveUpdateDestroyAPIView.delete(self, request, *args, **kwargs)
+    except Exception as e:
+      return HttpResponse(json.dumps({
+        'error': {
+          'message': e.args[0]
+        }
+      }), status=500)
