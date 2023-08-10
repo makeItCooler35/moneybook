@@ -16,8 +16,8 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
         sub_key = key[key.index('[')+1:-1]
         dict[newKey][sub_key] = value
       else:
-        newKey = key
-        dict[newKey] = json.loads(value)
+        dict[key] = json.loads(value)
+
     return dict
 
   def parse_get_data(self, data):
@@ -31,8 +31,8 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
     
     return res
   
-  def __create_sort_str(self, sort):
-    return ('-' if sort['sortDesc'] else '') + sort['sortBy']
+  def __create_sort_list(self, sort):
+    return [('-' if sort['sortDesc'] else '') + sort['sortBy']]
 
 
   def get(self, request, *args, **kwargs):
@@ -41,10 +41,10 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
     if 'pk' in kwargs:
       qs = [self.objects.get(pk=kwargs['pk'])]
     else:
-      sort = getattr(self, 'default_sorting', 'id')
+      sort = getattr(self, 'default_sorting', ['id'])
       sorting = req_params.get('sorting', {})
       if len(req_params['sorting']):
-        sort = self.__create_sort_str(sorting)
+        sort = self.__create_sort_list(sorting)
 
       parent = req_params.get('parent', None)
       if parent != None:
@@ -55,7 +55,7 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
       except:
         qs = self.get_queryset()
   
-      qs = qs.order_by(sort)
+      qs = qs.order_by(*sort)
 
     serializer = self.get_serializer_class()
 
