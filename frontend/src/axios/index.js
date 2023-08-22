@@ -13,7 +13,7 @@ class Axios
   }
 
   _toShowToast(method) {
-    return ['post', 'delete', 'patch'].indexOf(method) > -1 ? true : false
+    return ['post', 'delete', 'patch'].includes(method) ? true : false
   }
 
   apiResponseHandler(response) {

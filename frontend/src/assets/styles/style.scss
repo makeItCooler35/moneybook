@@ -12,9 +12,10 @@ $font-size-sm: .875rem;
 }
 
 .modal-dialog {
-  .modal-header {
-    display: none;
-  }
+  display: flex;
+  align-items: center;
+  margin: auto;
+  min-height: calc(100% - 3.5rem);
 }
 
 h1 {
@@ -28,4 +29,8 @@ h1 {
 
 .pointer {
   cursor: pointer;
+}
+
+.right{
+  text-align: right;
 }

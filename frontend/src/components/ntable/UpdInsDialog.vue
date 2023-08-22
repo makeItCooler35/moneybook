@@ -1,7 +1,6 @@
 <template>
   <b-modal
     v-model="show"
-    centered
     @ok="doUpdIns"
     @hidden="doHide"
     ok-title="Сохранить"

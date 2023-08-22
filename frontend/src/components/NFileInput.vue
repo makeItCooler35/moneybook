@@ -35,7 +35,7 @@ export default({
   },
   methods: {
     OnChange(item) {
-      if(!(this.acceptedFormats.indexOf(item.type) > -1)) {
+      if(!(this.acceptedFormats.includes(item.type))) {
         this.file = null;
         this.placeholder = 'Неверный формат';
       }
