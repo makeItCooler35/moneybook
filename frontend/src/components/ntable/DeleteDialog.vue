@@ -2,7 +2,6 @@
   <b-container>
     <b-modal
       v-model="show"
-      centered
       @ok="doDelete"
       @hidden="doHide"
       ok-title="Удалить"
@@ -19,7 +18,6 @@
     </b-modal>
     <b-modal
       v-model="showProgress"
-      centered
       hide-footer
     >
       <span>Идет удаление {{ maxProgress }} записей</span>
