@@ -36,6 +36,8 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
 
 
   def get(self, request, *args, **kwargs):
+    serializer = self.get_serializer_class()
+
     req_params = self.prepare_req_params(request.query_params)
     qs = None
     if 'pk' in kwargs:
@@ -47,33 +49,42 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
         sort = self.__create_sort_list(sorting)
 
       parent = req_params.get('parent', None)
-      if parent != None:
-        parent = None if parent == 0 else parent
-
-      try:
-        qs = self.get_queryset().filter(parent=parent)
-      except:
+      start_id = req_params.get('startId', 0)
+      
+      if start_id:
         qs = self.get_queryset()
-  
-      qs = qs.order_by(*sort)
+      else:
+        try:
+          qs = self.get_queryset().filter(parent=parent)
+        except:
+          qs = self.get_queryset()
 
-    serializer = self.get_serializer_class()
+      qs = qs.order_by(*sort)
 
     try:
       per_page = int(req_params['pagination']['perPage'])
       page = int(req_params['pagination']['page'])
-      start_id = req_params.get('startId', 0)
       if start_id:
         row = [self.objects.get(pk=start_id)]
         dt = (serializer(row, many=True).data)[0]
-        lt = {
-          sort+"__lt": dt[sort],
-        }
         parent = dt.get('parent', None)
         if parent:
           qs = qs.filter(parent=parent)
         
-        cnt = qs.filter(**lt).count() + 1
+        cnt = 0
+        tmp_qs = qs.all()
+        for item in sort:
+          lt = {}
+          sign = 'lt'
+          if item.startswith('-'):
+            item = item[1:]
+            sign = 'gt'
+          lt[item + '__' + sign] = dt[item]
+
+          cnt += tmp_qs.filter(**lt).count()
+          tmp_qs = tmp_qs.exclude(**lt)
+
+        cnt += 1
         page = math.ceil(cnt / per_page)
     except:
       per_page = 10
