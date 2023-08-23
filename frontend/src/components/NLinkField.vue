@@ -19,11 +19,10 @@
             <n-table2
               :http-model="httpModel"
               :default-id-selected="currentId"
-              no-actions
-              is-modal
-              selectable
               select-mode="single"
+              no-actions
               no-select-folder
+              no-move
               @update:fk="OnUpdateFK"
             />
           </b-col>

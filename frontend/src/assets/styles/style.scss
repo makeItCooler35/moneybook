@@ -16,6 +16,12 @@ $font-size-sm: .875rem;
   align-items: center;
   margin: auto;
   min-height: calc(100% - 3.5rem);
+
+  .modal-header {
+    .close {
+      display: none;
+    }
+  }
 }
 
 h1 {
@@ -31,6 +37,10 @@ h1 {
   cursor: pointer;
 }
 
-.right{
+.right {
   text-align: right;
+}
+
+h1 {
+  text-align: center;
 }
