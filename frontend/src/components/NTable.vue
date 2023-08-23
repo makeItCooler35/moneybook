@@ -1,5 +1,5 @@
 <template>
-  <b-container fluid class="d-flex flex-column">
+  <b-container fluid>
     <b-row align-v="center">
       <b-col>
         <b-button
@@ -18,7 +18,7 @@
       <b-col>
         <b-container fluid>
           <b-row>
-            <b-col v-if="!isMoving">
+            <b-col v-if="!isMoving" cols="10">
               <b-button
                 v-if="!noMove && isSelectable"
                 title="Переместить"
@@ -28,7 +28,7 @@
                 Переместить
               </b-button>
             </b-col>
-            <b-col v-else>
+            <b-col v-else cols="10">
               <b-row>
                 <b-col>
                   <b-button @click="OnClickEmitMove">
@@ -70,10 +70,7 @@
       >
         <template #head(selected) v-if="!isMoving">
           <b-button variant="outline-dark" @click="OnClickToAllSelect">
-            <span
-              aria-hidden="true"
-              :class="isAllSelected ? `text-dark` : `text-white`"
-            >
+            <span :class="isAllSelected ? `text-dark` : `text-white`">
               &check;
             </span>
           </b-button>
@@ -90,10 +87,7 @@
         </template>
         <template #cell(selected)="{item}" v-if="!isMoving">
           <b-button variant="outline-dark" @click="OnClickToSelect(item)">
-            <span
-              aria-hidden="true"
-              :class="selected.includes(item.id) ? `text-dark` : `text-white`"
-            >
+            <span :class="selected.includes(item.id) ? `text-dark` : `text-white`">
               &check;
             </span>
           </b-button>
