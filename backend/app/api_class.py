@@ -30,34 +30,30 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
       res['rows'].append(item.values())
     
     return res
-  
-  def __create_sort_list(self, sort):
-    return [('-' if sort['sortDesc'] else '') + sort['sortBy']]
-
 
   def get(self, request, *args, **kwargs):
     serializer = self.get_serializer_class()
 
     req_params = self.prepare_req_params(request.query_params)
-    qs = None
+    qs = None # QuerySet
+
     if 'pk' in kwargs:
       qs = [self.objects.get(pk=kwargs['pk'])]
     else:
+      # сортировка
       sort = getattr(self, 'default_sorting', ['id'])
       sorting = req_params.get('sorting', {})
       if len(req_params['sorting']):
-        sort = self.__create_sort_list(sorting)
+        sort = [('-' if sorting['sortDesc'] else '') + sorting['sortBy']]
 
+      # папка и выбранный по умолчанию элемент
       parent = req_params.get('parent', None)
-      start_id = req_params.get('startId', 0)
+      start_id = req_params.get('startId', None)
       
-      if start_id:
-        qs = self.get_queryset()
-      else:
-        try:
-          qs = self.get_queryset().filter(parent=parent)
-        except:
-          qs = self.get_queryset()
+      qs = self.get_queryset()
+
+      if 'parent' in [x.name for x in self.model._meta.fields] and not start_id:
+        qs = qs.filter(parent=parent)
 
       qs = qs.order_by(*sort)
 
@@ -99,11 +95,13 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
     
     dt = serializer(data_page, many=True)
     data = self.parse_get_data(dt.data)
+  
     data['service'] = {}
     data['service']['count_rows'] = paginator.count
     data['service']['count_pages'] = paginator.num_pages
     data['service']['page'] = page
     data['service']['parent'] = locals().get('parent')
+
     return Response(data)
   
   def patch(self, request, *args, **kwargs):

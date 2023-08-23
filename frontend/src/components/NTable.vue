@@ -451,6 +451,7 @@ export default {
     OnClickFolder(item) {
       // ПОЛЬЗОВАТЕЛЬ НАЖАЛ НА ПАПКУ (падаем по иерархии)
       this.currentParent = item.id;
+      this.currentPage = 1;
       this.fetchData();
     },
 
@@ -459,7 +460,7 @@ export default {
       const res = (await this.$http.get(`${this.httpModel}/${this.currentParent}`)).data;
       const item = this.prepareData(res.rows, res.fields)[0];
       this.currentParent = item.parent;
-      this.$set(this, 'currentParent', item.parent);
+      this.currentPage = 1;
       this.fetchData();
     },
 
@@ -479,7 +480,7 @@ export default {
 
     async OnClickEmitMove() {
       // ПОЛЬЗОВАТЕЛЬ ПЕРЕМЕЩАЕТ ЗАПИСИ МЕЖДУ ПАПКАМИ
-      await this.$http.post(`${this.httpModel}/${this.currentParent}`, {
+      await this.$http.post(`${this.httpModel}/${Number(this.currentParent)}`, {
         _method: 'move',
         items: this.selected,
       });
