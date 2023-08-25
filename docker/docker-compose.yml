@@ -1,0 +1,14 @@
+services:
+  web:
+    build: ../backend/docker_env
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - C:/Users/Niki/Desktop/moneybook/backend:/backend
+    environment:
+      - POSTGRES_NAME=Finance
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_HOST=host.docker.internal
+      - POSTGRES_PORT=5432
+    ports:
+      - 8000:8000

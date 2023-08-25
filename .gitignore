@@ -1,4 +1,3 @@
-backend/venv
 __pycache__
 migrations
 *.code-workspace
