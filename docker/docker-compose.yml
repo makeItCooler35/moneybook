@@ -1,9 +1,9 @@
 services:
-  web:
+  django:
     build: ../backend/docker_env
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - C:/Users/Niki/Desktop/moneybook/backend:/backend
+      - C:/Users/Niki/Desktop/moneybook/backend/:/usr/src/backend
     environment:
       - POSTGRES_NAME=Finance
       - POSTGRES_USER=postgres
@@ -12,3 +12,4 @@ services:
       - POSTGRES_PORT=5432
     ports:
       - 8000:8000
+      - 3000:3000
