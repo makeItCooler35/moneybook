@@ -1,5 +1,5 @@
 services:
-  django:
+  web_app:
     build: ../backend/docker_env
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
@@ -13,3 +13,28 @@ services:
     ports:
       - 8000:8000
       - 3000:3000
+    depends_on:
+      - redis
+  
+  redis:
+    image: redis:7-alpine
+
+  worker:
+    build: ../backend/docker_env
+    entrypoint: celery
+    command: -A celery_app.app worker --loglevel=info
+    volumes:
+      - C:/Users/Niki/Desktop/moneybook/backend/:/usr/src/backend
+    environment:
+      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+      - POSTGRES_NAME=Finance
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_HOST=host.docker.internal
+      - POSTGRES_PORT=5432
+    links:
+      - redis
+    depends_on:
+      - redis

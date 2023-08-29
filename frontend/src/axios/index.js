@@ -9,11 +9,31 @@ class Axios
       baseURL: process.env.VUE_APP_BACK_HOST,
     });
 
+    this.instance.interceptors.request.use(this.apiRequestHandler.bind(this), this.apiRequestErrorHandler.bind(this));
+
     this.instance.interceptors.response.use(this.apiResponseHandler.bind(this), this.apiResponseErrorHandler.bind(this));
   }
 
   _toShowToast(method) {
     return ['post', 'delete', 'patch'].includes(method) ? true : false
+  }
+
+  apiRequestHandler(config) {
+    console.log(config.data);
+    if(config.method == 'post' && config.data) {
+      for(const item of Object.values(config.data)) {
+        if(item instanceof Blob) {
+          config.data.bgTask = 1;
+          break;
+        }
+      }
+    }
+
+    return config;
+  }
+
+  apiRequestErrorHandler(err) {
+    return err.response;
   }
 
   apiResponseHandler(response) {

@@ -2,8 +2,7 @@ from rest_framework.response import Response
 from rest_framework import generics
 from django.core.paginator import Paginator
 from django.http import HttpResponse
-import json
-import math
+import json, math, base64
 
 class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
   def prepare_req_params(self, params):
@@ -119,8 +118,20 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
       method = request.data.get('_method').lower()
       if hasattr(self, method):
         try:
-          res = getattr(self, method)(request.data)
-          return HttpResponse(json.dumps({'data': res}))
+          if bool(request.data.get('bgTask', 0)):
+            for key in request.data:
+              value = request.data[key]
+              try:
+                if value.file:
+                  request.data[key] = base64.b64encode(value.read())
+              except:
+                pass
+
+            res = getattr(self, method).delay(request.data)
+            return HttpResponse(json.dumps({'data': res.id}))
+          else:
+            res = getattr(self, method)(request.data)
+            return HttpResponse(json.dumps({'data': res}))
         except Exception as e:
           pgcode = getattr(e.__cause__, 'pgcode', False) if getattr(e, '__cause__', False) else None
           message = str(e)
