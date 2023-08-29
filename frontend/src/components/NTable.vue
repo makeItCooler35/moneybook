@@ -61,9 +61,6 @@
         :select-mode="selectMode"
         show-empty
         small
-        label-sort-desc=""
-        label-sort-asc=""
-        label-sort-clear=""
         no-local-sorting
         no-select-on-click
         @sort-changed="OnSortChanged"
@@ -284,6 +281,11 @@ export default {
       //обращение к бэку, заполнение данных
       let res = null;
       this.isBusy = true;
+      
+      // сброс сортировки
+      if(!this.sorting.sortBy) {
+        this.sorting = {};
+      }
 
       try {
         res = (await this.$http.get(

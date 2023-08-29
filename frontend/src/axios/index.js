@@ -19,7 +19,6 @@ class Axios
   }
 
   apiRequestHandler(config) {
-    console.log(config.data);
     if(config.method == 'post' && config.data) {
       for(const item of Object.values(config.data)) {
         if(item instanceof Blob) {
