@@ -128,7 +128,7 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
                 pass
 
             res = getattr(self, method).delay(request.data)
-            return HttpResponse(json.dumps({'data': res.id}))
+            return HttpResponse(json.dumps({'jobId': res.id, 'title': request.data.get('title', '')}), status=202)
           else:
             res = getattr(self, method)(request.data)
             return HttpResponse(json.dumps({'data': res}))

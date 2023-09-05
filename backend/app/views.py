@@ -1,14 +1,17 @@
+from django.views import View
 from .api_class import ApiView
 from .models import Book, Categories
 from .serializers import BookSerializer, CategoriesSerializer
 import pandas as pd, numpy as np, base64
+from django.http import HttpResponse
+import json
 import pytz
 from datetime import datetime
+from celery.result import AsyncResult
 from celery_app import app
 
 tz = pytz.utc
 
-# Create your views here.
 class CategoriesView(ApiView):
   model = Categories
   queryset = model.objects.all()
@@ -62,3 +65,16 @@ class BookView(ApiView):
   
     view.model.objects.bulk_create(ls, batch_size=batch_size)
     return True
+
+class JobsView(ApiView):
+  def get(self, request, *args, **kwargs):
+    jobId = request.query_params.get('jobId', None)
+    asyncRes = {'status': None}
+    if jobId:
+      asyncRes = AsyncResult(jobId)
+
+    return HttpResponse(json.dumps({
+      'status': asyncRes.status,
+      'jobId': jobId,
+      'end': False if asyncRes.status == 'PENDING' else True
+    }))

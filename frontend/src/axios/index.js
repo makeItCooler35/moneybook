@@ -32,15 +32,50 @@ class Axios
   }
 
   apiRequestErrorHandler(err) {
+    const message = err.response.data.error.message;
+    this.app.$toast(message, 1);
     return err.response;
   }
 
-  apiResponseHandler(response) {
-    if(this._toShowToast(response.config.method)) {
+  async apiResponseHandler(response) {    
+    //this.app.$store.commit("CLEAR_JOBS");
+    const jobId = response?.data?.jobId;
+
+    if(response.status == 202) {
+      const timer = setTimeout(async() => {
+        await this.app.$http.get("jobs", {params: {jobId}});
+      }, 5000);
+
+      this.app.$store.commit("ADD_JOB", {
+        jobId,
+        title: response.data.title,
+        timer
+      });
+    } else if(jobId) {
+      this.apiCheckStatusJob(response, jobId);
+    } else if(this._toShowToast(response.config.method)) { // обычная (нефоновая) задача
       this.app.$toast("Операция завершена.", 0);
-   }
+    }
   
     return response;
+  }
+
+  apiCheckStatusJob(response, jobId) {
+    if(!(response?.data?.end)) {
+      const timer = setTimeout(async() => {
+        await this.app.$http.get("jobs", {params: {jobId}});
+      }, 5000);
+
+      this.app.$store.commit("CHANGE_JOB", {jobId, timer});
+    } else {
+      this.app.$store.commit("CHANGE_JOB", {
+        jobId,
+        status: response.data.status
+      });
+      
+      const title = this.app.$store.getters.getJob(jobId);
+      this.app.$toast(`${title}: Операция завершена.`, 0);
+    }
   }
 
   apiResponseErrorHandler(err) {

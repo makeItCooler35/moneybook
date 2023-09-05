@@ -1,7 +1,12 @@
 <template>
   <b-container id="app" fluid style="height: 100vh;">
-    <b-row>
-      <side-bar/>
+    <b-row class="bar">
+      <b-col>
+        <side-bar/>
+      </b-col>
+      <b-col>
+        <task-bar/>
+      </b-col>
     </b-row>
     <b-row style="height: 90%;">
       <router-view :key="$route.query?.parent"/>
@@ -11,10 +16,11 @@
 
 <script>
 import SideBar from './components/SideBar.vue';
+import TaskBar from './components/TaskBar.vue';
 export default {
   name: 'App',
   components:{
-    SideBar,
+    SideBar, TaskBar
   },
 }
 </script>

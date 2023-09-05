@@ -38,7 +38,7 @@ export default({
     async Upload() {
       await this.$http.post(
         this.httpModel, 
-        {_method: "upload_excel", file: this.file},
+        {_method: "upload_excel", file: this.file, title: 'Подкачка из Тинькофф'},
         {headers: {'Content-Type': 'multipart/form-data'}}
       );
     }

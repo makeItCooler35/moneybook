@@ -1,9 +1,25 @@
 $primary: #0D6EFD;
+$success: #198754;
 $padding-sm: .25rem .5rem;
 $font-size-sm: .875rem;
 
 .btn-secondary, .btn-secondary.disabled {
-  background-color: #0D6EFD;
+  background-color: $primary;
+}
+
+.bar {
+  .btn-secondary, .btn-secondary.disabled {
+    background-color: $success;
+  }
+
+  .dropdown-item {
+    border-bottom: 1px solid black;
+  }
+
+  border-bottom: 1px solid black;
+  padding-top: 1vh;
+  padding-bottom: 1vh;
+  margin-bottom: 1vh;
 }
 
 .btn {
