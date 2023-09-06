@@ -1,5 +1,6 @@
 $primary: #0D6EFD;
 $success: #198754;
+$bar-color: rgba(116, 255, 78, 1);
 $padding-sm: .25rem .5rem;
 $font-size-sm: .875rem;
 
@@ -20,6 +21,16 @@ $font-size-sm: .875rem;
   padding-top: 1vh;
   padding-bottom: 1vh;
   margin-bottom: 1vh;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  background-color: $bar-color;
+  z-index: 1;
+}
+
+.main {
+  margin-top: 10vh;
 }
 
 .btn {

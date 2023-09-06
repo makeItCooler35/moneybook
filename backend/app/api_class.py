@@ -104,7 +104,14 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
     return Response(data)
   
   def patch(self, request, *args, **kwargs):
-    return generics.RetrieveUpdateDestroyAPIView.patch(self, request, *args, **kwargs)
+    try:
+      return generics.RetrieveUpdateDestroyAPIView.patch(self, request, *args, **kwargs)
+    except Exception as e:
+      return HttpResponse(json.dumps({
+        'error': {
+          'message': e.args[0]
+        }
+      }), status=500)
 
   def move(self, data):
     parent = data['pk'] if data['pk'] else None
@@ -142,7 +149,14 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
             }
           }, ensure_ascii=False), status=500)
   
-    return generics.CreateAPIView.post(self, request, *args, **kwargs)
+    try:
+      return generics.CreateAPIView.post(self, request, *args, **kwargs)
+    except Exception as e:
+      return HttpResponse(json.dumps({
+        'error': {
+          'message': e.args[0]
+        }
+      }), status=500)
   
   def delete(self, request, *args, **kwargs):
     try:

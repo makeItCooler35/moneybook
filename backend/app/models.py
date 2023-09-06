@@ -3,7 +3,7 @@ from django.db import models
 # Create your models here.
 
 class Categories(models.Model):
-  mcc = models.PositiveIntegerField(blank=True, default=None)
+  mcc = models.PositiveIntegerField(blank=True, default=None, null=True)
   name = models.CharField(max_length=255, blank=False)
   parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
   is_folder = models.BooleanField(blank=True, default=False)

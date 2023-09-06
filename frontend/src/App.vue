@@ -1,5 +1,5 @@
 <template>
-  <b-container id="app" fluid style="height: 100vh;">
+  <b-container id="app" fluid style="height: 90vh;">
     <b-row class="bar">
       <b-col>
         <side-bar/>
@@ -8,7 +8,7 @@
         <task-bar/>
       </b-col>
     </b-row>
-    <b-row style="height: 90%;">
+    <b-row class="main">
       <router-view :key="$route.query?.parent"/>
     </b-row>
   </b-container>
