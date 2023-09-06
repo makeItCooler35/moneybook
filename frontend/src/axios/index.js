@@ -37,8 +37,7 @@ class Axios
     return err.response;
   }
 
-  async apiResponseHandler(response) {    
-    //this.app.$store.commit("CLEAR_JOBS");
+  async apiResponseHandler(response) {
     const jobId = response?.data?.jobId;
 
     if(response.status == 202) {
@@ -79,7 +78,7 @@ class Axios
   }
 
   apiResponseErrorHandler(err) {
-    const message = err.response.data.error.message;
+    const message = err.response?.data?.error?.message;
     this.app.$toast(message, 1);
     return err.response;
   }

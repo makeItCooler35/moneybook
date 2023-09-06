@@ -2,16 +2,17 @@
   <b-container fluid>
     <b-row>
       <b-col class="text-right">
-        <b-dropdown right>
+        <b-dropdown right class="my-class">
           <template #button-content>
-            <b-img :src="require('@/assets/icons/bell.svg')"/>
+            <b-img v-if="!Boolean(pendingJobs.length)" :src="require('@/assets/icons/bell.svg')"/>
+            <b-spinner v-else small/>
           </template>
           <b-dropdown-item v-for="(job, key) in jobs" :key="key">
-            <span v-if="job.status == 'SUCCESS'">
+            <span v-if="job.timer == null">
               &#10004;&#65039;
             </span>
             <b-spinner v-else small/>
-            {{ job.title }}
+            {{ job.startTime }} {{ job.title }}
           </b-dropdown-item>
         </b-dropdown>
       </b-col>
@@ -24,14 +25,16 @@ export default {
   computed: {
     jobs() {
       return this.$store.getters.getJobs;
+    },
+    pendingJobs() {
+      return this.jobs.filter(x => x.timer);
     }
   },
   mounted() {
     this.$nextTick(() => {
       // нужно проверить незавершенные работы
-      const pendingJobs = Object.entries(this.jobs).filter(x => x[1].timer).map(x => x[0]);
-      for(const jobId of pendingJobs) {
-        this.$http.get("jobs", {params: {jobId}});
+      for(const job of this.pendingJobs) {
+        this.$http.get("jobs", {params: {jobId: job.jobId}});
       }
     });
   }

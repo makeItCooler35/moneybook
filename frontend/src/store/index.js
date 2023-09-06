@@ -8,17 +8,17 @@ export default new Vuex.Store({
   state: {
     perPage: 10,
     selections: {},
-    jobs: {}
+    jobs: []
   },
   getters: {
     getSelection: (state) => (name) => {
       return state.selections[name] ?? {};
     },
     getJobs(state) {
-      return state.jobs;
+      return [...state.jobs].reverse();
     },
     getJob: (state) => (jobId) => {
-      return state.jobs[jobId]?.title ?? '';
+      return state.jobs.filter(x => x.jobId ==jobId)?.[0]?.title ?? '';
     }
   },
   mutations: {
@@ -36,24 +36,30 @@ export default new Vuex.Store({
       }
     },
     "CLEAR_JOBS"(state) {
-      state.jobs = {};
+      state.jobs = [];
     },
     "ADD_JOB"(state, {jobId, title='', timer}) {
-      state.jobs[jobId] = {
+      state.jobs.push({
+        jobId,
         status: '',
         title,
-        timer
-      };
-      state.jobs = {...state.jobs};
+        timer,
+        startTime: (new Date()).toLocaleString("ru-RU")
+      });
+
+      state.jobs = [...state.jobs];
     },
     "CHANGE_JOB"(state, payload) {
       const jobId = payload.jobId;
-      state.jobs[jobId] = {
-        status: payload?.status ?? state.jobs[jobId]?.status ?? '',
-        timer: payload?.timer ?? null,
-        title: payload?.title ?? state.jobs[jobId]?.title ?? ''
-      };
-      state.jobs = {...state.jobs};
+      const index = state.jobs.findIndex(x => x.jobId == jobId);
+      if(index > -1) {
+        state.jobs[index] = {...state.jobs[index],
+          status: payload?.status ?? state.jobs[index]?.status ?? '',
+          timer: payload?.timer ?? null,
+          title: payload?.title ?? state.jobs[index]?.title ?? ''
+        };
+        state.jobs = [...state.jobs];
+      }
     }
   },
   actions: {

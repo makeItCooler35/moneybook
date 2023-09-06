@@ -128,7 +128,8 @@
           </div>
         </template>
         <template #empty>
-          <h1>Произошла ошибка либо данных нет</h1>
+          <h1 v-if="!fields.length">Произошла ошибка при загрузке данных</h1>
+          <h1 v-else>Данных нет</h1>
         </template>
       </b-table>
     </b-row>

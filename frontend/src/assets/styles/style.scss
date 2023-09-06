@@ -42,6 +42,7 @@ $font-size-sm: .875rem;
 
 h1 {
   margin: auto;
+  text-align: center;
 }
 
 .b-form-component {
@@ -57,6 +58,7 @@ h1 {
   text-align: right;
 }
 
-h1 {
-  text-align: center;
+.dropdown-menu {
+  max-height: 90vh;
+  overflow-y: auto;
 }
