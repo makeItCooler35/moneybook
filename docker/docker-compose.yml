@@ -34,6 +34,7 @@ services:
       - POSTGRES_PASSWORD=12345
       - POSTGRES_HOST=host.docker.internal
       - POSTGRES_PORT=5432
+      - REPORT_RELATIVE_ROOT='/reports'
     links:
       - redis
     depends_on:
