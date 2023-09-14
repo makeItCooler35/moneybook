@@ -18,7 +18,7 @@ export default new Vuex.Store({
       return [...state.jobs].reverse();
     },
     getJob: (state) => (jobId) => {
-      return state.jobs.filter(x => x.jobId ==jobId)?.[0]?.title ?? '';
+      return state.jobs.filter(x => x.jobId ==jobId)?.[0] ?? {};
     }
   },
   mutations: {
@@ -35,16 +35,11 @@ export default new Vuex.Store({
         state.selections[name] = {};
       }
     },
-    "CLEAR_JOBS"(state) {
-      state.jobs = [];
-    },
-    "ADD_JOB"(state, {jobId, title='', timer}) {
+    "ADD_JOB"(state, {jobId, title='', timer, responseType}) {
       state.jobs.push({
-        jobId,
+        jobId, title, timer, responseType,
         status: '',
-        title,
-        timer,
-        startTime: (new Date()).toLocaleString("ru-RU")
+        startTime: (new Date()).toLocaleString("ru-RU"),
       });
 
       state.jobs = [...state.jobs];
@@ -56,9 +51,30 @@ export default new Vuex.Store({
         state.jobs[index] = {...state.jobs[index],
           status: payload?.status ?? state.jobs[index]?.status ?? '',
           timer: payload?.timer ?? null,
-          title: payload?.title ?? state.jobs[index]?.title ?? ''
+          result: payload.result
         };
+  
         state.jobs = [...state.jobs];
+      }
+    },
+    "DELETE_JOB"(state, jobId) {
+      if(jobId === null) {
+        state.jobs.forEach(x => {
+          if(typeof(x.result) == 'string' && x.result.includes('blob')) {
+            URL.revokeObjectURL(x.result);
+          }
+        });
+        state.jobs = [];
+      } else {
+        const index = state.jobs.findIndex(x => x.jobId == jobId);
+        if(index > -1) {
+          const url = state.jobs[index]?.result;
+          if(typeof(url) == 'string' && url.includes('blob')) {
+            URL.revokeObjectURL(url);
+          }
+
+          state.jobs.splice(index, 1);
+        }
       }
     }
   },

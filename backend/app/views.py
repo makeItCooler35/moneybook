@@ -1,4 +1,3 @@
-from django.views import View
 from .api_class import ApiView
 from .models import Book, Categories
 from .serializers import BookSerializer, CategoriesSerializer
@@ -9,6 +8,8 @@ import pytz
 from datetime import datetime
 from celery.result import AsyncResult
 from celery_app import app
+from django.conf import settings
+import uuid
 
 tz = pytz.utc
 
@@ -64,17 +65,53 @@ class BookView(ApiView):
         ls = []
   
     view.model.objects.bulk_create(ls, batch_size=batch_size)
-    return True
+    return {'data': 'SUCCESS'}
+
+  @staticmethod
+  @app.task(serializer='json')
+  def unload_excel(data):
+    # заглушка
+    df1 = pd.DataFrame([['a', 'b'], ['c', 'd']],
+                      index=['row 1', 'row 2'],
+                      columns=['col 1', 'col 2'])
+
+    path = "{report_root}/report_{uuid}.xlsx".format(report_root=settings.REPORT_ROOT, uuid=str(uuid.uuid4()))
+    df1.to_excel(path)
+
+    return {
+      'file': path,
+      'headers': {
+        'Content-Type': "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        'Content-Disposition': 'attachment;'
+      }
+    }
 
 class JobsView(ApiView):
   def get(self, request, *args, **kwargs):
-    jobId = request.query_params.get('jobId', None)
+    job_id = request.query_params.get('jobId', None)
     asyncRes = {'status': None}
-    if jobId:
-      asyncRes = AsyncResult(jobId)
+    if job_id:
+      asyncRes = AsyncResult(job_id)
 
-    return HttpResponse(json.dumps({
-      'status': asyncRes.status,
-      'jobId': jobId,
-      'end': False if asyncRes.status == 'PENDING' else True
-    }))
+    is_end = 0 if asyncRes.status == 'PENDING' else 1
+    job_result_return = is_end and int(request.query_params.get('get_result', 0))
+    
+    headers = {
+      'Job-Id': job_id,
+      'Job-End': is_end,
+      'Job-Result-Return': job_result_return,
+      'Access-Control-Expose-Headers': 'Job-Id, Job-End, Job-Result-Return'
+    }
+
+    if job_result_return:
+      result = asyncRes.get()
+      headers = headers | result.get('headers', {})
+      if(result.get('file', None)):
+        with open(result.get('file'), 'rb') as f:
+          return HttpResponse(content=f, headers=headers)
+      else:
+        return HttpResponse(content=result.get('data', {}), headers=headers)
+    else:
+      return HttpResponse(json.dumps({
+        'status': asyncRes.status
+      }), headers=headers)

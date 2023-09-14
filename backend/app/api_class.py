@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework import generics
 from django.core.paginator import Paginator
-from django.http import HttpResponse
+from django.http import JsonResponse
 import json, math, base64
 
 class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
@@ -107,11 +107,11 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
     try:
       return generics.RetrieveUpdateDestroyAPIView.patch(self, request, *args, **kwargs)
     except Exception as e:
-      return HttpResponse(json.dumps({
+      return JsonResponse({
         'error': {
           'message': e.args[0]
         }
-      }), status=500)
+      }, status=500)
 
   def move(self, data):
     parent = data['pk'] if data['pk'] else None
@@ -135,35 +135,44 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
                 pass
 
             res = getattr(self, method).delay(request.data)
-            return HttpResponse(json.dumps({'jobId': res.id, 'title': request.data.get('title', '')}), status=202)
+
+            headers = {
+              'job-id': res.id,
+              'Access-Control-Expose-Headers': 'job-id'
+            }
+
+            return JsonResponse(data={}, status=202, headers=headers)
           else:
             res = getattr(self, method)(request.data)
-            return HttpResponse(json.dumps({'data': res}))
+            try:
+              return JsonResponse({'data': res})
+            except:
+              return JsonResponse(res.get('data', True), headers=res.get('headers', {}))
         except Exception as e:
           pgcode = getattr(e.__cause__, 'pgcode', False) if getattr(e, '__cause__', False) else None
           message = str(e)
-          return HttpResponse(json.dumps({
+          return JsonResponse({
             'error': {
               'pgcode': pgcode,
               'message': message
             }
-          }, ensure_ascii=False), status=500)
+          }, status=500)
   
     try:
       return generics.CreateAPIView.post(self, request, *args, **kwargs)
     except Exception as e:
-      return HttpResponse(json.dumps({
+      return JsonResponse({
         'error': {
           'message': e.args[0]
         }
-      }), status=500)
+      }, status=500)
   
   def delete(self, request, *args, **kwargs):
     try:
       return generics.RetrieveUpdateDestroyAPIView.delete(self, request, *args, **kwargs)
     except Exception as e:
-      return HttpResponse(json.dumps({
+      return JsonResponse({
         'error': {
           'message': e.args[0]
         }
-      }), status=500)
+      }, status=500)

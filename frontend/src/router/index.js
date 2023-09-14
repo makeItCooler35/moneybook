@@ -33,6 +33,11 @@ const routes = [
         name: 'uploadtinkoff',
         component: () => import('../views/operations/UploadTinkoffView.vue'),
       },
+      {
+        path: 'unloadcosts',
+        name: 'unloadcosts',
+        component: () => import('../views/operations/UnloadCostsView.vue'),
+      }
     ],
   },
   {
