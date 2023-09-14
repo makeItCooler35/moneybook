@@ -1,16 +1,16 @@
 <template>
   <b-container id="app" fluid style="height: 90vh;">
-    <b-row class="bar">
-      <b-col>
+    <div class="bar">
+      <div>
         <side-bar/>
-      </b-col>
-      <b-col>
+      </div>
+      <div>
         <task-bar/>
-      </b-col>
-    </b-row>
-    <b-row class="main">
+      </div>
+    </div>
+    <div class="main">
       <router-view :key="$route.query?.parent"/>
-    </b-row>
+    </div>
   </b-container>
 </template>
 

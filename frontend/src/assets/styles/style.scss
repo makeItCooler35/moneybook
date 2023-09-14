@@ -2,31 +2,31 @@ $primary: #0D6EFD;
 $success: #198754;
 $bar-color: rgba(116, 255, 78, 1);
 $padding-sm: .25rem .5rem;
-$font-size-sm: .875rem;
+$font-size-sm: .75rem;
+
+html {
+  font-size: 0.85rem;
+}
 
 .btn-secondary, .btn-secondary.disabled {
   background-color: $primary;
 }
 
 .bar {
-  .btn-secondary, .btn-secondary.disabled {
-    background-color: $success;
-  }
-
-  .dropdown-item {
-    border-bottom: 1px solid black;
-  }
-
+  display: flex;
+  justify-content: space-between;
   border-bottom: 1px solid black;
-  padding-top: 1vh;
-  padding-bottom: 1vh;
-  margin-bottom: 1vh;
+  padding: 1vh;
   position: fixed;
   left: 0;
   right: 0;
   top: 0;
   background-color: $bar-color;
-  z-index: 1;
+  z-index: 10;
+
+  .btn-secondary, .btn-secondary.disabled {
+    background-color: $success;
+  }
 }
 
 .main {
@@ -36,6 +36,7 @@ $font-size-sm: .875rem;
 .btn {
   padding: $padding-sm;
   font-size: $font-size-sm;
+  margin: .1rem;
 }
 
 .modal-dialog {
@@ -72,4 +73,27 @@ h1 {
 .dropdown-menu {
   max-height: 90vh;
   overflow-y: auto;
+}
+
+.b-sidebar.b-sidebar-right {
+  .b-sidebar-header {
+    display: flex;
+    flex-direction: row-reverse;
+
+    .close {
+      margin-left: auto;
+      margin-right: 0;
+    }
+  }
+
+  .jobs {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px;
+
+    .info {
+      font-size: 2.1vh;
+    }
+  }
 }

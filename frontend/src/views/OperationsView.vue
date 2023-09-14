@@ -26,7 +26,8 @@ export default({
   data(){
     return{
       items:[
-        {title: 'Загрузить расходы их Excel (Тинькофф)', name: 'uploadtinkoff'},
+        {title: 'Загрузить расходы из Excel (Тинькофф)', name: 'uploadtinkoff'},
+        {title: 'Выгрузить расходы в Excel', name: 'unloadcosts'}
       ],
     };
   },
