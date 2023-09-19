@@ -81,7 +81,7 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
             tmp_qs = tmp_qs.exclude(**condition)
 
         cnt += 1
-        return math.ceil(cnt / per_page)
+        return [math.ceil(cnt / per_page), qs_data]
 
     def get(self, request, *args, **kwargs):
         serializer = self.get_serializer_class()
@@ -109,7 +109,7 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
         page = int(pagination and pagination.get('page')) or 1
 
         if start_id:
-            page = self._get_start_page_by_id(
+            [page, qs_data] = self._get_start_page_by_id(
                 qs_data,
                 serializer([self.objects.get(pk=start_id)], many=True).data[0],
                 sort, per_page
