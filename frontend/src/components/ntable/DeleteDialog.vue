@@ -2,6 +2,7 @@
   <b-container>
     <b-modal
       v-model="show"
+      @show="OnBeforeShow"
       @ok="doDelete"
       @hidden="doHide"
       ok-title="Удалить"
@@ -11,7 +12,7 @@
       <b-container>
         <b-row>
           <b-col>
-            Вы уверены?
+            Вы действительно хотите удалить {{ maxProgress }} записей.
           </b-col>
         </b-row>
       </b-container>
@@ -55,14 +56,14 @@ export default {
       let res = null;
       this.showProgress = true;
 
-      let listToDelete = this.id;
-      if(!Array.isArray(this.id))
-          listToDelete = [this.id];
-
-      this.maxProgress = listToDelete.length;
-      for(let item of listToDelete) {
-        await this.$http.delete(this.httpModel + `/${item}`);
-        this.currentProgress += 1;
+      if(Array.isArray(this.id)) { // массив
+        await this.$http.delete(this.httpModel, {
+          params: {
+            id: JSON.stringify(this.id)
+          }
+        });
+      } else {  // одиночная запись
+        await this.$http.delete(this.httpModel + `/${this.id}`);
       }
       this.currentProgress = 0;
       this.showProgress = false;
@@ -71,6 +72,9 @@ export default {
     doHide() {
       this.show = false;
       this.$emit('close');
+    },
+    OnBeforeShow() {
+      this.maxProgress = !Array.isArray(this.id) ? 1 : this.id.length;
     }
   },
 }

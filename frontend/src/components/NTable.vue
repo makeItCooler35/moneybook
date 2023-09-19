@@ -392,6 +392,7 @@ export default {
       this.currentId = null;
   
       if(result !== undefined) {
+        this.selected = [];
         this.fetchData();
       }
     },

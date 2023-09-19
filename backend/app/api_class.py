@@ -188,6 +188,11 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
 
     def delete(self, request, *args, **kwargs):
         try:
+            list_to_delete = json.loads(request.query_params.get('id', '[]'))
+            if list_to_delete:
+                if self.objects.filter(id__in=list_to_delete).delete()[0]:
+                    return JsonResponse(data={})
+
             return generics.RetrieveUpdateDestroyAPIView.delete(self, request, *args, **kwargs)
         except DatabaseError as error:
             return JsonResponse({
