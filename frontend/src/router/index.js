@@ -52,6 +52,15 @@ const routes = [
     path: '/categories',
     name: 'categories',
     component: () => import('../views/handbooks/CategoriesView.vue'),
+  },
+  {
+    path: '/accounts',
+    name: 'accounts',
+    component: () => import('../views/PageNotCreatedYet.vue')
+  },
+  {
+    path: "*",
+    component: () => import('../views/PageNotFound.vue')
   }
 ]
 
