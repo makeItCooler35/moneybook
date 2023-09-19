@@ -12,7 +12,7 @@
       <b-container>
         <b-row>
           <b-col>
-            Вы действительно хотите удалить {{ maxProgress }} записей.
+            Вы действительно хотите удалить {{ maxRecords }} записей.
           </b-col>
         </b-row>
       </b-container>
@@ -21,8 +21,10 @@
       v-model="showProgress"
       hide-footer
     >
-      <span>Идет удаление {{ maxProgress }} записей</span>
-      <b-progress :value="currentProgress" :max="maxProgress" show-progress animated/>
+      <div class="text-center">
+        <h1>Идет удаление {{ maxRecords }} записей</h1>
+        <b-spinner />
+      </div>
     </b-modal>
   </b-container>
 </template>
@@ -37,8 +39,7 @@ export default {
   data() {
     return {
       showProgress: false,
-      maxProgress: 0,
-      currentProgress: 0,
+      maxRecords: 0,
     };
   },
   computed: {
@@ -65,7 +66,7 @@ export default {
       } else {  // одиночная запись
         await this.$http.delete(this.httpModel + `/${this.id}`);
       }
-      this.currentProgress = 0;
+
       this.showProgress = false;
       this.$emit('close', res);
     },
@@ -74,7 +75,7 @@ export default {
       this.$emit('close');
     },
     OnBeforeShow() {
-      this.maxProgress = !Array.isArray(this.id) ? 1 : this.id.length;
+      this.maxRecords = !Array.isArray(this.id) ? 1 : this.id.length;
     }
   },
 }
