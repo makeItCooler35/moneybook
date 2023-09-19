@@ -1,117 +1,124 @@
+'''Здесь содержатся вьюшки для моделей'''
+import base64
+import uuid
+import json
+from datetime import datetime
+import pytz
+import pandas as pd
+import numpy as np
+from celery.result import AsyncResult
+from django.http import HttpResponse
+from django.conf import settings
+from celery_app import app
 from .api_class import ApiView
 from .models import Book, Categories
 from .serializers import BookSerializer, CategoriesSerializer
-import pandas as pd, numpy as np, base64
-from django.http import HttpResponse
-import json
-import pytz
-from datetime import datetime
-from celery.result import AsyncResult
-from celery_app import app
-from django.conf import settings
-import uuid
 
 tz = pytz.utc
 
 class CategoriesView(ApiView):
-  model = Categories
-  queryset = model.objects.all()
-  objects = model.objects
-  serializer_class = CategoriesSerializer
-  default_sorting = ["-is_folder", "mcc"]
+    'Описываем категории'
+    model = Categories
+    queryset = model.objects.all()
+    objects = model.objects
+    serializer_class = CategoriesSerializer
+    default_sorting = ["-is_folder", "mcc"]
 
 class BookView(ApiView):
-  model = Book
-  categoties_model = Categories
-  queryset = model.objects.select_related("category").all()
-  objects = model.objects
-  serializer_class = BookSerializer
-  default_sorting = ["time_at"]
+    'Описываем свойства и методы работы с книгами (записями покупок)'
+    model = Book
+    categoties_model = Categories
+    queryset = model.objects.select_related("category").all()
+    objects = model.objects
+    serializer_class = BookSerializer
+    default_sorting = ["time_at"]
 
-  @staticmethod
-  @app.task(serializer='json')
-  def upload_excel(data):
-    view = BookView()
-    file = base64.b64decode(data['file'])
-    xl = pd.read_excel(file)
-    ls = []
-    batch_size = 500
-    for item in xl.itertuples():
-      if item[4] != 'OK':
-        continue
+    @staticmethod
+    @app.task(serializer='json')
+    def upload_excel(data):
+        'Подкачиваем записи в книгу из эксель от Тинькофф'
+        view = BookView()
+        file = base64.b64decode(data['file'])
+        df_excel = pd.read_excel(file)
+        strings = []
+        batch_size = 500
+        for item in df_excel.itertuples():
+            if item[4] != 'OK':
+                continue
 
-      # сначала определим категорию
-      mcc = 0 if np.isnan(item[11]) else item[11]
-      category_id = view.categoties_model.objects.filter(mcc__exact=mcc, is_folder=False)[:1]
-      if len(category_id) == 0:
-        category_id = view.categoties_model.objects.create(
-          mcc=mcc,
-          name=item[10],
-          is_folder=False
-        )
-      else:
-        category_id = category_id[0]
-      
-      ls.append(view.model(
-        time_at=tz.localize(datetime.strptime(item[1], '%d.%m.%Y %H:%M:%S')),
-        sum=item[5],
-        bonus=0 if np.isnan(item[9]) else item[9],
-        description=item[12],
-        category=category_id
-      ))
+            # сначала определим категорию
+            mcc = 0 if np.isnan(item[11]) else item[11]
+            category_id = view.categoties_model.objects.filter(mcc__exact=mcc, is_folder=False)[:1]
+            if len(category_id) == 0:
+                category_id = view.categoties_model.objects.create(
+                    mcc=mcc, name=item[10], is_folder=False
+                )
+            else:
+                category_id = category_id[0]
 
-      if(len(ls) == batch_size):
-        view.model.objects.bulk_create(ls, batch_size=batch_size)
-        ls = []
-  
-    view.model.objects.bulk_create(ls, batch_size=batch_size)
-    return {'data': 'SUCCESS'}
+            strings.append(view.model(
+                time_at=tz.localize(datetime.strptime(item[1], '%d.%m.%Y %H:%M:%S')),
+                sum=item[5],
+                bonus=0 if np.isnan(item[9]) else item[9],
+                description=item[12],
+                category=category_id
+            ))
 
-  @staticmethod
-  @app.task(serializer='json')
-  def unload_excel(data):
-    # заглушка
-    df1 = pd.DataFrame([['a', 'b'], ['c', 'd']],
-                      index=['row 1', 'row 2'],
-                      columns=['col 1', 'col 2'])
+            if len(strings) == batch_size:
+                view.model.objects.bulk_create(strings, batch_size=batch_size)
+                strings = []
 
-    path = "{report_root}/report_{uuid}.xlsx".format(report_root=settings.REPORT_ROOT, uuid=str(uuid.uuid4()))
-    df1.to_excel(path)
+        view.model.objects.bulk_create(strings, batch_size=batch_size)
+        return {'data': 'SUCCESS'}
 
-    return {
-      'file': path,
-      'headers': {
-        'Content-Type': "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        'Content-Disposition': 'attachment;'
-      }
-    }
+    @staticmethod
+    @app.task(serializer='json')
+    def unload_excel(data):
+        'Выгружаем данные из книги в эксель'
+        # заглушка
+        print(data)
+        df1 = pd.DataFrame([['a', 'b'], ['c', 'd']],
+                        index=['row 1', 'row 2'],
+                        columns=['col 1', 'col 2'])
+
+        path = f"{settings.REPORT_ROOT}/report_{str(uuid.uuid4())}.xlsx"
+        df1.to_excel(path)
+
+        return {
+            'file': path,
+            'headers': {
+                'Content-Type': "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                'Content-Disposition': 'attachment;'
+            }
+        }
 
 class JobsView(ApiView):
-  def get(self, request, *args, **kwargs):
-    job_id = request.query_params.get('jobId', None)
-    asyncRes = {'status': None}
-    if job_id:
-      asyncRes = AsyncResult(job_id)
+    'Описываем методы получения статуса фоновых работ и их результатов'
+    def get(self, request, *args, **kwargs):
+        job_id = request.query_params.get('jobId', None)
+        async_res = {'status': None}
+        if job_id:
+            async_res = AsyncResult(job_id)
 
-    is_end = 0 if asyncRes.status == 'PENDING' else 1
-    job_result_return = is_end and int(request.query_params.get('get_result', 0))
-    
-    headers = {
-      'Job-Id': job_id,
-      'Job-End': is_end,
-      'Job-Result-Return': job_result_return,
-      'Access-Control-Expose-Headers': 'Job-Id, Job-End, Job-Result-Return'
-    }
+        is_end = 0 if async_res.status == 'PENDING' else 1
+        job_result_return = is_end and int(request.query_params.get('get_result', 0))
 
-    if job_result_return:
-      result = asyncRes.get()
-      headers = headers | result.get('headers', {})
-      if(result.get('file', None)):
-        with open(result.get('file'), 'rb') as f:
-          return HttpResponse(content=f, headers=headers)
-      else:
-        return HttpResponse(content=result.get('data', {}), headers=headers)
-    else:
-      return HttpResponse(json.dumps({
-        'status': asyncRes.status
-      }), headers=headers)
+        headers = {
+        'Job-Id': job_id,
+        'Job-End': is_end,
+        'Job-Result-Return': job_result_return,
+        'Access-Control-Expose-Headers': 'Job-Id, Job-End, Job-Result-Return'
+        }
+
+        if job_result_return:
+            result = async_res.get()
+            headers = headers | result.get('headers', {})
+            if result.get('file', None):
+                with open(result.get('file'), 'rb') as file:
+                    return HttpResponse(content=file, headers=headers)
+            else:
+                return HttpResponse(content=result.get('data', {}), headers=headers)
+        else:
+            return HttpResponse(json.dumps({
+                'status': async_res.status
+            }), headers=headers)
