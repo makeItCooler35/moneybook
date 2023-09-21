@@ -1,7 +1,21 @@
 <template>
   <b-container class="m-0 p-0">
-    <b-button @click="toShow = true" variant="success" style="width: 100%;">
-      {{ title }}
+    <b-button
+      @click="toShow = true"
+      variant="success"
+      class="link-button"
+    >
+      <b-row>
+        <b-col cols="2" />
+        <b-col>
+          {{ title }}
+        </b-col>
+        <b-col cols="2">
+          <b-button @click.stop="OnClear">
+            x
+          </b-button>
+        </b-col>
+      </b-row>
     </b-button>
     <b-modal
       v-model="toShow"
@@ -40,8 +54,7 @@ export default {
     show: {type: Boolean, default: false},
     id: {type: Number, default: null},
     value: {default: ''},
-    bindKey: {type: String, default: 'name'},
-    bindField: {type: String, required: true}
+    bindKey: {type: String, default: 'name'}
   },
   computed: {
     title() {
@@ -70,6 +83,12 @@ export default {
       this.currentId = item.id;
       this.currentValue = item[this.bindKey];
     },
+    OnClear() {
+      this.currentId = null;
+      this.currentValue = '';
+
+      this.OnEmit();
+    }
   },
 }
 </script>

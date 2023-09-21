@@ -2,7 +2,7 @@ $primary: #0D6EFD;
 $success: #198754;
 $bar-color: rgba(116, 255, 78, 1);
 $padding-sm: .25rem .5rem;
-$font-size-sm: .75rem;
+$font-size-sm: 0.85rem;
 
 html {
   font-size: 0.85rem;
@@ -96,4 +96,38 @@ h1 {
       font-size: 2.1vh;
     }
   }
+}
+
+.n-form > div {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px 5px;
+}
+
+.link-button {
+  padding: 0;
+  width: 100%;
+
+  .row {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+
+    div {
+      display: flex;
+      align-items: center;
+      padding-left: 0;
+      padding-right: 0;
+      justify-content: center;
+    }
+    div:last-child {
+      justify-content: end;
+      align-self: flex-start;
+    }
+  }
+}
+
+label {
+  text-align: center;
 }

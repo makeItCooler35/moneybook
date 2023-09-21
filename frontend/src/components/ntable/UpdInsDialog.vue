@@ -20,7 +20,6 @@
             :value="currentRow[header.key]"
             :http-model="header.model"
             :bind-field="header.bindField"
-            :bind-key="header.bindKey"
             @input="OnInputFK($event, header)"
           />
           <input
