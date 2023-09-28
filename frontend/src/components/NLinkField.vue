@@ -35,7 +35,7 @@
               :default-id-selected="currentId"
               select-mode="single"
               no-actions
-              no-select-folder
+              :no-select-folder="noSelectFolder"
               no-move
               @update:fk="OnUpdateFK"
             />
@@ -52,43 +52,53 @@ export default {
   props: {
     httpModel: {type: String, required: true},
     show: {type: Boolean, default: false},
-    id: {type: Number, default: null},
-    value: {default: ''},
-    bindKey: {type: String, default: 'name'}
+    value: {type: Number, default: null},
+    text: {default: ''},
+    bindKey: {type: String, default: 'name'},
+    noSelectFolder: {type: Boolean, default: false}
   },
   computed: {
     title() {
-      return this.currentValue || "Установите связь";
+      return this.currentText || "Установите связь";
     },
     isChanged() {
-      return this.id != this.currentId;
+      return this.value != this.currentId;
     }
   },
   data() {
     return {
       toShow: false,
-      currentId: this.id,
-      currentValue: this.value,
+      currentId: this.value,
+      currentText: this.text,
     };
   },
   methods: {
     OnEmit() {
-      this.$emit('input', {id: this.currentId, value: this.currentValue});
+      this.$emit('input', {id: this.currentId, value: this.currentText});
     },
     OnHide() {
-      this.currentId = this.id;
-      this.currentValue = this.value;
+      this.currentId = this.value;
+      this.currentText = this.text;
     },
     OnUpdateFK(item) {
       this.currentId = item.id;
-      this.currentValue = item[this.bindKey];
+      this.currentText = item[this.bindKey];
     },
     OnClear() {
       this.currentId = null;
-      this.currentValue = '';
+      this.currentText = '';
 
       this.OnEmit();
     }
   },
+  watch: {
+    value(newVal) {
+      this.currentId = newVal;
+
+      if(newVal == null) {
+        this.currentText = '';
+      }
+    }
+  }
 }
 </script>

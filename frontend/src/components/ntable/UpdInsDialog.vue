@@ -16,10 +16,10 @@
         <b-col>
           <n-link-field
             v-if="header.type==='link'"
-            :id="currentRow[header.bindField]"
-            :value="currentRow[header.key]"
+            v-model="currentRow[header.bindField]"
+            :text="currentRow[header.key]"
             :http-model="header.model"
-            :bind-field="header.bindField"
+            no-select-folder
             @input="OnInputFK($event, header)"
           />
           <input

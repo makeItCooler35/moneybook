@@ -42,29 +42,25 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
 
         return res
 
-    def _make_sort(self, qs_data, req_params, sort):
-        parent = req_params.get('parent', None)
-        start_id = req_params.get('startId', None)
+    def _make_sort(self, req_params, sort, parent=None):
+        qs_data = self.get_queryset()
+
+        fltr = req_params.get('fltr', {})
+        if fltr:
+            qs_data = self.fltr(qs_data, fltr)
+
         sorting = req_params.get('sorting', {})
 
         if len(req_params['sorting']):
             sort = [('-' if sorting['sortDesc'] else '') + sorting['sortBy']]
 
-        qs_data = self.get_queryset()
-
-        if 'parent' in [x.name for x in self.model._meta.fields] and not start_id:
+        if 'parent' in [x.name for x in self.model._meta.fields]:
             qs_data = qs_data.filter(parent=parent)
 
         return qs_data.order_by(*sort)
 
     def _get_start_page_by_id(self, qs_data, one_row, sort, per_page):
         'по записи получаем страницу, откудпа будет старт'
-
-        parent = one_row.get('parent', None)
-
-        if parent:
-            qs_data = qs_data.filter(parent=parent)
-
         cnt = 0
         tmp_qs = qs_data.all()
 
@@ -75,7 +71,11 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
                 item = item[1:]
                 sign = 'gt'
 
-            condition = {item + '__' + sign: one_row[item]}
+            value = one_row[item]
+            if value is not None:
+                condition = {item + '__' + sign: value}
+            else:
+                condition = {item + '__isnull': True}
 
             cnt += tmp_qs.filter(**condition).count()
             tmp_qs = tmp_qs.exclude(**condition)
@@ -89,8 +89,13 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
         req_params = self.prepare_req_params(request.query_params)
 
         # папка и выбранный по умолчанию элемент
-        parent = req_params.get('parent', None)
         start_id = req_params.get('startId', None)
+        parent = req_params.get('parent', None)
+
+        if start_id:
+            item =  serializer([self.objects.get(pk=start_id)], many=True).data[0]
+            parent = item.get('parent', None)
+
         sort = getattr(self, 'default_sorting', ['id'])
 
         qs_data = None # QuerySet
@@ -99,7 +104,7 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
             qs_data = [self.objects.get(pk=kwargs['pk'])]
         else:
             # сортировка
-            qs_data = self._make_sort(qs_data, req_params, sort)
+            qs_data = self._make_sort(req_params, sort, parent)
 
         pagination = req_params.get('pagination') or {
             'perPage': 10,

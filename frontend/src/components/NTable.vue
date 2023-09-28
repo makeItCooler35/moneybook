@@ -1,5 +1,5 @@
 <template>
-  <b-container fluid>
+  <b-container fluid class="main-table">
     <b-row align-v="center">
       <b-col>
         <b-button
@@ -18,7 +18,7 @@
       <b-col>
         <b-container fluid>
           <b-row>
-            <b-col v-if="!isMoving" cols="10">
+            <b-col v-if="!isMoving" cols="8">
               <b-button
                 v-if="!noMove && isSelectable"
                 title="Переместить"
@@ -28,7 +28,7 @@
                 Переместить
               </b-button>
             </b-col>
-            <b-col v-else cols="10">
+            <b-col v-else cols="8">
               <b-row>
                 <b-col>
                   <b-button @click="OnClickEmitMove">
@@ -43,6 +43,14 @@
               </b-row>
             </b-col>
             <b-col class="right">
+              <filter-bar
+                v-if="!noFilter"
+                v-model="fltr"
+                @filter:clear="fltr = {}"
+                @filter:apply="fetchData"
+              >
+                <slot name="filter" :fltr="fltr" />
+              </filter-bar>
               <b-dropdown right>
                 <b-dropdown-item @click="showFieldsDialog = true">Поля</b-dropdown-item>
                 <b-dropdown-item @click="fetchData">Обновить</b-dropdown-item>
@@ -134,7 +142,7 @@
       </b-table>
     </b-row>
     <b-row class="mt-auto text-center border-bottom justify-content-end p-1">
-      <b-col xl="5" sm="6" class="d-flex flex-row" align-content="center">
+      <b-col class="d-flex flex-row justify-content-center">
         <b-form-input
           v-model="currentPage"
           type="number"
@@ -148,7 +156,7 @@
           страница из {{ totalPages }}
         </label>
       </b-col>
-      <b-col xl="5" sm="6">
+      <b-col class="d-flex flex-row justify-content-center">
         <b-form-select
           v-model="perPage"
           :options="perPageOptions"
@@ -190,9 +198,10 @@
 import DeleteDialog from './ntable/DeleteDialog.vue';
 import UpdInsDialog from './ntable/UpdInsDialog.vue';
 import FieldsDialog from './ntable/FieldsDialog.vue';
+import FilterBar from './ntable/FilterBar.vue';
 
 export default {
-  components: { DeleteDialog, UpdInsDialog, FieldsDialog },
+  components: { DeleteDialog, UpdInsDialog, FieldsDialog, FilterBar },
 
   props: {
     httpModel: {type: String, required: true},
@@ -210,6 +219,8 @@ export default {
     selectMode: {type: String, default: 'multi'},
     noSelectFolder: {type: Boolean, default: false},
     defaultIdSelected: {type: [Number, null], default: undefined},
+
+    noFilter: {type: Boolean, default: false}
   },
 
   data() {
@@ -245,7 +256,9 @@ export default {
 
       isMoving: false, //режим перемещения
       isBusy: true, //ожидание ответа от бэка и заполнение данных
-      firstCreated: true // первое отображение
+      firstCreated: true, // первое отображение
+
+      fltr: {}, // фильтр
     }
   },
 
@@ -298,7 +311,8 @@ export default {
               },
               sorting: JSON.stringify(this.sorting),
               startId: this.firstCreated ? this.defaultIdSelected : undefined,
-              parent: this.currentParent
+              parent: this.currentParent,
+              fltr:  this.fltr
             }
           })
         ).data;
@@ -498,7 +512,7 @@ export default {
       // ПОЛЬЗОВАТЕЛЬ МЕНЯЕТ ПОЛЯ ВЫБОРКИ
       this.$store.commit("CHANGE_SELECTION", {name: this.httpModel, fields});
       this.fetchData();
-    }
+    },
   },
 }
 </script>

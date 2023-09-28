@@ -92,6 +92,40 @@ class BookView(ApiView):
             }
         }
 
+    def fltr(self, qs_data, fltr):
+        'Фильтр пользовательский'
+        if fltr.get('categoryId'):
+            # а вдруг это папка
+            all_categories = CategoriesView.objects.raw('''
+                WITH RECURSIVE tt AS(
+                    SELECT
+                        id
+                    FROM app_categories 
+                    WHERE id = %s AND is_folder = TRUE
+
+                    UNION ALL
+
+                    SELECT ac.id
+                    FROM tt
+                    JOIN app_categories ac ON ac.parent_id = tt.id
+                )
+
+                SELECT id FROM tt
+            ''', [fltr['categoryId']])
+
+            qs_data = qs_data.filter(category__in=[x.id for x in all_categories])
+
+        if fltr.get('dateStart'):
+            qs_data = qs_data.filter(time_at__gte=fltr['dateStart'])
+
+        if fltr.get('dateEnd'):
+            qs_data = qs_data.filter(time_at__lte=fltr['dateEnd'])
+
+        if fltr.get('sum'):
+            qs_data = qs_data.filter(sum=fltr['sum'])
+
+        return qs_data
+
 class JobsView(ApiView):
     'Описываем методы получения статуса фоновых работ и их результатов'
     def get(self, request, *args, **kwargs):
