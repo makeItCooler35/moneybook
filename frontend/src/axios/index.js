@@ -123,7 +123,7 @@ class Axios
   }
 
   apiResponseErrorHandler(err) {
-    const message = err.response?.data?.error?.message;
+    const message = err.response?.data?.error?.message ?? 'Произошла ошибка';
     this.app.$toast(message, 1);
     return err.response;
   }

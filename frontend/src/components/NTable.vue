@@ -180,7 +180,7 @@
       v-model="showUpdInsDialog"
       :http-model="httpModel"
       :id="currentId"
-      :fields="selfFields"
+      :fields="fieldsUpdInsDialog"
       :start-row="currentRow"
       @close="DestroyModal"
     />
@@ -246,6 +246,7 @@ export default {
       title: '', //название выборки
       folderName: null,
       fields: [],
+      folderFields: [],
 
       selection: {}, // из .js
 
@@ -281,6 +282,12 @@ export default {
     },
     selfFields() {
       return this.fields.filter(x => x?.self ?? true);
+    },
+    fieldsUpdInsDialog() {
+      if(!this.folderFields.length || !this.currentRow.is_folder)
+        return this.selfFields;
+
+      return this.selfFields.filter(x => this.folderFields.includes(x.key));
     }
   },
 
@@ -339,6 +346,7 @@ export default {
       this.title = this.selection.title;
       this.folderName = this.selection.folderName ?? null;
       this.fields = [...selectionFields];
+      this.folderFields = this.selection.folderFields ?? [];
 
       // отметка галочкой
       if(this.isSelectable)

@@ -9,6 +9,7 @@ from django.core.paginator import Paginator, EmptyPage
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http import JsonResponse
 from django.db import DatabaseError
+from rest_framework.exceptions import ValidationError
 
 class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
     'Общий класс для составления ответа'
@@ -149,6 +150,13 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
                     'message': error.args[0]
                 }
             }, status=500)
+        except ValidationError as error:
+            message = ";".join([key + ': ' + value[0] for [key, value] in error.args[0].items()])
+            return JsonResponse({
+                'error': {
+                    'message': message
+                }
+            }, status=500)
 
     def move(self, data):
         'Перемещение элемента в выборке между папками'
@@ -186,9 +194,16 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
             return generics.CreateAPIView.post(self, request, *args, **kwargs)
         except DatabaseError as error:
             return JsonResponse({
-            'error': {
-                'message': error.args[0]
-            }
+                'error': {
+                    'message': error.args[0]
+                }
+            }, status=500)
+        except ValidationError as error:
+            message = ";".join([key + ': ' + value[0] for [key, value] in error.args[0].items()])
+            return JsonResponse({
+                'error': {
+                    'message': message
+                }
             }, status=500)
 
     def delete(self, request, *args, **kwargs):
@@ -203,5 +218,12 @@ class ApiView(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
             return JsonResponse({
                 'error': {
                     'message': error.args[0]
+                }
+            }, status=500)
+        except ValidationError as error:
+            message = ";".join([key + ': ' + value[0] for [key, value] in error.args[0].items()])
+            return JsonResponse({
+                'error': {
+                    'message': message
                 }
             }, status=500)

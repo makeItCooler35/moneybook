@@ -13,5 +13,6 @@ export default
       label: "Название",
       type: 'text'
     },
-  ]
+  ],
+  folderFields: ['name']
 }
