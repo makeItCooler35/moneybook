@@ -20,11 +20,11 @@
           </b-col>
         </b-row>
         <b-row>
-          <b-col cols="5" class="d-flex">
+          <b-col cols="5">
             <label>С</label>
             <n-date-input v-model="fltr.dateStart" />
           </b-col>
-          <b-col cols="5" class="d-flex">
+          <b-col cols="5">
             <label>По</label>
             <n-date-input v-model="fltr.dateEnd" />
           </b-col>

@@ -151,6 +151,10 @@ label {
   text-align: center;
   margin: auto;
   margin-left: 0;
+
+  .b-form-btn-label-control.form-control &.form-control {
+    margin: auto;
+  }
 }
 
 .row {
@@ -161,6 +165,11 @@ label {
     padding-left: 0;
     padding-right: 0;
     margin-top: 5px;
+    display: flex;
+  }
+
+  > div.j-c-c {
+    justify-content: center;
   }
 
   > div:first-child {

@@ -1,7 +1,7 @@
 <template>
   <b-container fluid class="mx-auto">
     <b-row>
-      <b-col v-for="(item,  key) of items" :key="key" class="text-center">
+      <b-col v-for="(item,  key) of items" :key="key" class="j-c-c">
         <b-button :to="{name: item.name}">
           <b-card
             :img-src="require('../assets/icons/books.png')"

@@ -142,7 +142,7 @@
       </b-table>
     </b-row>
     <b-row class="mt-auto text-center border-bottom justify-content-end p-1">
-      <b-col class="d-flex flex-row justify-content-center">
+      <b-col class="j-c-c">
         <b-form-input
           v-model="currentPage"
           type="number"
@@ -156,7 +156,7 @@
           страница из {{ totalPages }}
         </label>
       </b-col>
-      <b-col class="d-flex flex-row justify-content-center">
+      <b-col class="j-c-c">
         <b-form-select
           v-model="perPage"
           :options="perPageOptions"

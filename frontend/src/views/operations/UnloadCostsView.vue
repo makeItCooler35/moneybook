@@ -1,13 +1,17 @@
 <template>
-  <b-container>
+  <b-container class="n-form">
     <b-row>
       <b-form-select v-model="selected" :options="groups" />
-      <b-container fluid class="p-0 mt-3">
+    </b-row>
+    <b-row>
+      <b-col cols="5">
         <label>Дата начала</label>
-        <b-form-datepicker v-model="startDate" />
+        <n-date-input v-model="startDate" />
+      </b-col>
+      <b-col cols="5">
         <label>Дата конца</label>
-        <b-form-datepicker v-model="endDate" />
-      </b-container>
+        <n-date-input v-model="endDate" />
+      </b-col>
     </b-row>
     <b-row class="mt-2">
       <b-button
@@ -21,9 +25,12 @@
 </template>
 
 <script>
+import NDateInput from '@/components/NDateInput.vue';
+
 export default({
   name: 'UnloadCostsView',
   components: {
+    NDateInput
   },
   data() {
     return {
